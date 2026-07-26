@@ -276,7 +276,7 @@ function applyFullPayload(payload) {
 }
 
 async function loadFromSupabase() {
-  const { data } = await sb.from('app_state').select('data').eq('app', SB_APP).single();
+  const { data } = await sb.from('app_state').select('data').eq('app', SB_APP).maybeSingle();
   if (data?.data && applyFullPayload(data.data)) return true;
   loadState(); // fall back to localStorage if no cloud data
   return false;
