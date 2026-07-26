@@ -282,14 +282,27 @@ async function loadFromSupabase() {
   return false;
 }
 
-async function sendMagicLink() {
+let _authMode = 'signin'; // 'signin' | 'signup'
+function toggleAuthMode() {
+  _authMode = _authMode === 'signin' ? 'signup' : 'signin';
+  const isSignUp = _authMode === 'signup';
+  document.getElementById('login-subtitle').textContent = isSignUp ? 'Create your account' : 'Sign in to your account';
+  document.querySelector('#login-screen button[onclick="authSubmit()"]').textContent = isSignUp ? 'Sign Up' : 'Sign In';
+  document.querySelector('#login-screen button[onclick="toggleAuthMode()"]').textContent = isSignUp ? 'Already have an account? Sign In' : 'Need an account? Sign Up';
+  document.getElementById('login-msg').textContent = '';
+}
+async function authSubmit() {
   const email = document.getElementById('login-email').value.trim();
-  if (!email) return;
+  const password = document.getElementById('login-password').value;
+  if (!email || !password) return;
   const msg = document.getElementById('login-msg');
-  msg.textContent = 'Sending…';
-  const FF_URL = 'https://maxwellcrowe7.github.io/Fantasy-Football-Projections/';
-  const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: FF_URL } });
-  msg.textContent = error ? error.message : `Check ${email} for your sign-in link.`;
+  msg.textContent = _authMode === 'signin' ? 'Signing in…' : 'Creating account…';
+  const fn = _authMode === 'signin'
+    ? sb.auth.signInWithPassword({ email, password })
+    : sb.auth.signUp({ email, password });
+  const { error } = await fn;
+  if (error) { msg.textContent = error.message; return; }
+  if (_authMode === 'signup') msg.textContent = 'Account created — you can sign in now.';
 }
 
 async function signOut() {
