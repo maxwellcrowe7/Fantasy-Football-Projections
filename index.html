@@ -8,8 +8,24 @@
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
+
+<div id="login-screen" style="display:none; position:fixed; inset:0; background:var(--bg,#111); z-index:9999; display:flex; align-items:center; justify-content:center;">
+  <div style="background:var(--surface,#1a1a1a); border:1px solid var(--border,#333); border-radius:12px; padding:40px 48px; width:360px; text-align:center;">
+    <div style="font-size:28px; font-weight:700; letter-spacing:-0.5px; margin-bottom:6px;">FF Projections</div>
+    <div style="color:var(--text-sub,#888); font-size:13px; margin-bottom:28px;">Sign in to save and sync your data</div>
+    <input id="login-email" type="email" placeholder="your@email.com"
+      style="width:100%; box-sizing:border-box; background:var(--bg,#111); border:1px solid var(--border,#333); border-radius:6px; padding:10px 12px; font-size:14px; color:inherit; margin-bottom:12px; outline:none;"
+      onkeydown="if(event.key==='Enter') sendMagicLink()">
+    <button onclick="sendMagicLink()"
+      style="width:100%; background:var(--blue,#3b82f6); color:#fff; border:none; border-radius:6px; padding:10px; font-size:14px; font-weight:600; cursor:pointer;">
+      Send Sign-In Link
+    </button>
+    <div id="login-msg" style="margin-top:14px; font-size:13px; color:var(--text-sub,#888); min-height:18px;"></div>
+  </div>
+</div>
 
 <div id="ctx-menu" class="ctx-menu">
   <div class="ctx-team-name" id="ctx-team-name"></div>
@@ -32,7 +48,7 @@
   </div>
 </div>
 
-<div class="app">
+<div class="app" id="app-root">
   <div class="top-nav">
     <button class="nav-btn active" id="nav-projections" onclick="switchPage('projections')">Projections</button>
     <button class="nav-btn" id="nav-rankings" onclick="switchPage('rankings')">Rankings</button>

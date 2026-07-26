@@ -212,9 +212,122 @@ const TEAM_LOGOS = {
   "Arizona Cardinals":"Cardinals","Los Angeles Rams":"Rams","San Francisco 49ers":"49ers","Seattle Seahawks":"Seahawks",
 };
 
+// ─── Supabase ────────────────────────────────────────────────────────────────
+const SUPABASE_URL = 'https://vxykjkuqhtfrzfktymja.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ4eWtqa3VxaHRmcnpma3R5bWphIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzOTM0MjgsImV4cCI6MjA5ODk2OTQyOH0.zKoNEyWSIOLYMNbRRlLtj5OOX0oRdV7jJ_mD7ONZXKU';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const SB_APP = 'ff-projections';
+
+let currentUser = null;
+let sbSaveTimer = null;
+
+function sbSave() {
+  if (!currentUser) return;
+  clearTimeout(sbSaveTimer);
+  sbSaveTimer = setTimeout(async () => {
+    const payload = buildFullPayload();
+    await sb.from('app_state').upsert(
+      { user_id: currentUser.id, app: SB_APP, data: payload, updated_at: new Date().toISOString() },
+      { onConflict: 'user_id,app' }
+    );
+  }, 2000);
+}
+
+function buildFullPayload() {
+  const teamLocks = {};
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k && k.startsWith('ff_locks_')) {
+      try { teamLocks[k] = JSON.parse(localStorage.getItem(k) || '{}'); } catch(e) {}
+    }
+  }
+  return {
+    version: '2',
+    state,
+    selectedTeam,
+    rankingsState:       JSON.parse(localStorage.getItem('ff_rankings_v1')         || '{}'),
+    teamStatus:          JSON.parse(localStorage.getItem('ff_team_status')          || '{}'),
+    colorOverrides:      JSON.parse(localStorage.getItem('ff_color_overrides')      || '{}'),
+    draftState:          JSON.parse(localStorage.getItem('ff_draft_v1')             || 'null') || { leagues: [], activeLeague: 0 },
+    scoringPresets:      JSON.parse(localStorage.getItem('ff_scoring_presets')      || 'null'),
+    activeScoringPreset: localStorage.getItem('ff_active_scoring_preset') || '0',
+    colDisplay:          JSON.parse(localStorage.getItem('ff_col_display')          || '{}'),
+    teamLocks,
+  };
+}
+
+function applyFullPayload(payload) {
+  if (!payload.state) return false;
+  state = payload.state;
+  if (payload.selectedTeam !== undefined) selectedTeam = payload.selectedTeam;
+  if (payload.rankingsState)               localStorage.setItem('ff_rankings_v1',         JSON.stringify(payload.rankingsState));
+  if (payload.teamStatus)                  localStorage.setItem('ff_team_status',          JSON.stringify(payload.teamStatus));
+  if (payload.colorOverrides)              localStorage.setItem('ff_color_overrides',      JSON.stringify(payload.colorOverrides));
+  if (payload.draftState)                  localStorage.setItem('ff_draft_v1',             JSON.stringify(payload.draftState));
+  if (payload.scoringPresets)              localStorage.setItem('ff_scoring_presets',      JSON.stringify(payload.scoringPresets));
+  if (payload.activeScoringPreset !== undefined) localStorage.setItem('ff_active_scoring_preset', payload.activeScoringPreset);
+  if (payload.colDisplay)                  localStorage.setItem('ff_col_display',          JSON.stringify(payload.colDisplay));
+  if (payload.teamLocks) {
+    Object.entries(payload.teamLocks).forEach(([k, v]) => {
+      try { localStorage.setItem(k, JSON.stringify(v)); } catch(e) {}
+    });
+  }
+  return true;
+}
+
+async function loadFromSupabase() {
+  const { data } = await sb.from('app_state').select('data').eq('app', SB_APP).single();
+  if (data?.data && applyFullPayload(data.data)) return true;
+  loadState(); // fall back to localStorage if no cloud data
+  return false;
+}
+
+async function sendMagicLink() {
+  const email = document.getElementById('login-email').value.trim();
+  if (!email) return;
+  const msg = document.getElementById('login-msg');
+  msg.textContent = 'Sending…';
+  const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.href } });
+  msg.textContent = error ? error.message : `Check ${email} for your sign-in link.`;
+}
+
+async function signOut() {
+  await sb.auth.signOut();
+}
+
+function showApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app-root').style.display = '';
+}
+function showLogin() {
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app-root').style.display = 'none';
+}
+
+async function initAuth() {
+  // Hide app until we know auth state
+  document.getElementById('app-root').style.display = 'none';
+
+  sb.auth.onAuthStateChange(async (event, session) => {
+    currentUser = session?.user || null;
+    if (currentUser) {
+      showApp();
+      await loadFromSupabase();
+      bootApp();
+    } else {
+      showLogin();
+    }
+  });
+
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) showLogin();
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
 const STORAGE_KEY = "ff_projections_v1";
 function saveState() {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ state, selectedTeam })); } catch(e) {}
+  sbSave();
 }
 function loadState() {
   try {
@@ -2577,6 +2690,13 @@ function renderSettings() {
       <div style="display:flex;gap:10px;margin-bottom:32px;">
         <button class="add-player-btn" onclick="exportData()" style="font-size:12px;padding:8px 16px;">↓ Export data</button>
         <button class="add-player-btn" onclick="importData()" style="font-size:12px;padding:8px 16px;">↑ Import data</button>
+      </div>
+      <div class="settings-section-title">Account</div>
+      <p style="font-size:11px;color:var(--text-3);margin-bottom:12px;font-family:var(--font-mono);">
+        Signed in as <strong>${currentUser?.email || '—'}</strong>. Your projections auto-save to the cloud.
+      </p>
+      <div style="display:flex;gap:10px;margin-bottom:32px;">
+        <button class="add-player-btn" onclick="signOut()" style="font-size:12px;padding:8px 16px;color:var(--red,#ef4444);">Sign out</button>
       </div>
       <div class="settings-section-title">Historical Data</div>
       <p style="font-size:11px;color:var(--text-3);margin-bottom:12px;font-family:var(--font-mono);">
@@ -5452,16 +5572,22 @@ function undraftPlayer(playerId, andAllAfter) {
 }
 
 // ─── End draft page ───────────────────────────────────────────────────────────
-loadStatMap();
-loadState();
-loadHistEdits();
-buildSidebar();
-if (selectedTeam) {
-  refreshSidebarDots();
-  renderMain();
+let _booted = false;
+function bootApp() {
+  if (_booted) return;
+  _booted = true;
+  loadStatMap();
+  loadHistEdits();
+  buildSidebar();
+  if (selectedTeam) {
+    refreshSidebarDots();
+    renderMain();
+  }
+  loadStatMap();
+  applyAllColorOverrides();
 }
-loadStatMap();
-applyAllColorOverrides();
+
+initAuth();
 
 // Forward vertical wheel events from inner scroll containers to the right scroll parent
 (function() {
