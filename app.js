@@ -278,8 +278,37 @@ function applyFullPayload(payload) {
 async function loadFromSupabase() {
   const { data } = await sb.from('app_state').select('data').eq('app', SB_APP).maybeSingle();
   if (data?.data && applyFullPayload(data.data)) return true;
-  loadState(); // fall back to localStorage if no cloud data
+  loadState();
   return false;
+}
+
+const HIST_ROW_ID = '00000000-0000-0000-0000-000000000001';
+
+async function loadHistFromSupabase() {
+  const { data } = await sb.from('ff_historical_data').select('data').eq('id', HIST_ROW_ID).maybeSingle();
+  if (!data?.data) return false;
+  const { histData, histCols } = data.data;
+  if (histData && histData.length > 0) {
+    HIST_DATA.length = 0;
+    histData.forEach(r => HIST_DATA.push(r));
+    localStorage.setItem('ff_hist_data', JSON.stringify(HIST_DATA));
+  }
+  if (histCols && histCols.length > 0) {
+    HIST_COLS.length = 0;
+    histCols.forEach(c => HIST_COLS.push(c));
+    localStorage.setItem('ff_hist_cols', JSON.stringify(HIST_COLS));
+  }
+  return true;
+}
+
+async function pushHistToSupabase() {
+  if (!HIST_DATA || HIST_DATA.length === 0) { alert('No historical data loaded — import the CSV first.'); return; }
+  const { error } = await sb.from('ff_historical_data').upsert(
+    { id: HIST_ROW_ID, data: { histData: HIST_DATA, histCols: HIST_COLS }, updated_at: new Date().toISOString() },
+    { onConflict: 'id' }
+  );
+  if (error) { alert('Upload failed: ' + error.message); return; }
+  alert('Historical data uploaded — all users will now load it automatically.');
 }
 
 let _authMode = 'signin'; // 'signin' | 'signup'
@@ -2734,10 +2763,11 @@ function renderSettings() {
       <p style="font-size:11px;color:var(--text-3);margin-bottom:12px;font-family:var(--font-mono);">
         Export historical data as CSV, edit column headers, then re-import to clean up naming conventions.
       </p>
-      <div style="display:flex;gap:10px;margin-bottom:32px;">
+      <div style="display:flex;gap:10px;margin-bottom:32px;flex-wrap:wrap;">
         <button class="add-player-btn" onclick="exportHistCSV()" style="font-size:12px;padding:8px 16px;">↓ Export historical data (CSV)</button>
         <button class="add-player-btn" onclick="importHistCSV()" style="font-size:12px;padding:8px 16px;">↑ Import historical data (CSV)</button>
         <button class="add-player-btn" onclick="clearHistData()" style="font-size:12px;padding:8px 16px;color:var(--red);border-color:var(--red);">✕ Clear historical data</button>
+        ${currentUser?.email === 'maxc@williamsav.com' ? `<button class="add-player-btn" onclick="pushHistToSupabase()" style="font-size:12px;padding:8px 16px;color:var(--green,#22c55e);border-color:var(--green,#22c55e);">↑ Publish to cloud (admin)</button>` : ''}
       </div>
     </div>
 
@@ -5605,11 +5635,12 @@ function undraftPlayer(playerId, andAllAfter) {
 
 // ─── End draft page ───────────────────────────────────────────────────────────
 let _booted = false;
-function bootApp() {
+async function bootApp() {
   if (_booted) return;
   _booted = true;
   loadStatMap();
-  loadHistEdits();
+  const loadedFromCloud = await loadHistFromSupabase();
+  if (!loadedFromCloud) loadHistEdits(); // fall back to localStorage
   buildSidebar();
   if (selectedTeam) {
     refreshSidebarDots();
