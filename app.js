@@ -216,6 +216,7 @@ const TEAM_LOGOS = {
 const SUPABASE_URL = 'https://vxykjkuqhtfrzfktymja.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ4eWtqa3VxaHRmcnpma3R5bWphIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzOTM0MjgsImV4cCI6MjA5ODk2OTQyOH0.zKoNEyWSIOLYMNbRRlLtj5OOX0oRdV7jJ_mD7ONZXKU';
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+sb.realtime.disconnect(); // we don't use realtime; disconnect to stop browser tab spinner
 const SB_APP = 'ff-projections';
 
 let currentUser = null;
