@@ -5640,8 +5640,11 @@ async function bootApp() {
   _booted = true;
   loadStatMap();
   const loadedFromCloud = await loadHistFromSupabase();
-  if (!loadedFromCloud) loadHistEdits(); // fall back to localStorage
+  if (!loadedFromCloud) loadHistEdits();
   buildSidebar();
+  // Re-render data page if it was the active page when hist data finishes loading
+  const lastPage = localStorage.getItem('ff_last_page');
+  if (lastPage === 'data') renderDataPage();
   if (selectedTeam) {
     refreshSidebarDots();
     renderMain();
