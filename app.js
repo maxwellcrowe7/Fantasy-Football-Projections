@@ -287,7 +287,8 @@ async function sendMagicLink() {
   if (!email) return;
   const msg = document.getElementById('login-msg');
   msg.textContent = 'Sending…';
-  const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.href } });
+  const FF_URL = 'https://maxwellcrowe7.github.io/Fantasy-Football-Projections/';
+  const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: FF_URL } });
   msg.textContent = error ? error.message : `Check ${email} for your sign-in link.`;
 }
 
