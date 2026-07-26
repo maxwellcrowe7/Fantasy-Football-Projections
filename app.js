@@ -295,13 +295,31 @@ async function signOut() {
   await sb.auth.signOut();
 }
 
+function updateAuthBtn() {
+  const btn = document.getElementById('nav-auth');
+  if (!btn) return;
+  if (currentUser) {
+    const initials = currentUser.email.split('@')[0].slice(0, 2).toUpperCase();
+    btn.textContent = initials;
+    btn.title = `Signed in as ${currentUser.email} — click to sign out`;
+  } else {
+    btn.textContent = 'Sign In';
+    btn.title = 'Sign in';
+  }
+}
+function handleAuthBtn() {
+  if (currentUser) signOut();
+  else showLogin();
+}
 function showApp() {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app-root').style.display = '';
+  updateAuthBtn();
 }
 function showLogin() {
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('app-root').style.display = 'none';
+  updateAuthBtn();
 }
 
 async function initAuth() {
