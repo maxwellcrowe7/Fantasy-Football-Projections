@@ -2767,7 +2767,7 @@ function renderSettings() {
         <button class="add-player-btn" onclick="exportHistCSV()" style="font-size:12px;padding:8px 16px;">↓ Export historical data (CSV)</button>
         <button class="add-player-btn" onclick="importHistCSV()" style="font-size:12px;padding:8px 16px;">↑ Import historical data (CSV)</button>
         <button class="add-player-btn" onclick="clearHistData()" style="font-size:12px;padding:8px 16px;color:var(--red);border-color:var(--red);">✕ Clear historical data</button>
-        ${currentUser?.email === 'maxc@williamsav.com' ? `<button class="add-player-btn" onclick="pushHistToSupabase()" style="font-size:12px;padding:8px 16px;color:var(--green,#22c55e);border-color:var(--green,#22c55e);">↑ Publish to cloud (admin)</button>` : ''}
+        ${currentUser?.email === 'maxwellcrowe7@gmail.com' ? `<button class="add-player-btn" onclick="pushHistToSupabase()" style="font-size:12px;padding:8px 16px;color:var(--green,#22c55e);border-color:var(--green,#22c55e);">↑ Publish to cloud (admin)</button>` : ''}
       </div>
     </div>
 
