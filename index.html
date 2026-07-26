@@ -26,11 +26,27 @@
       style="width:100%; background:var(--blue,#3b82f6); color:#fff; border:none; border-radius:6px; padding:10px; font-size:14px; font-weight:600; cursor:pointer; margin-bottom:10px;">
       Sign In
     </button>
+    <button id="forgot-pw-btn" onclick="forgotPassword()" style="width:100%;background:transparent;color:var(--text-sub,#888);border:none;padding:4px;font-size:12px;cursor:pointer;margin-bottom:4px;">Forgot password?</button>
     <button onclick="toggleAuthMode()"
       style="width:100%; background:transparent; color:var(--text-sub,#888); border:1px solid var(--border,#333); border-radius:6px; padding:8px; font-size:13px; cursor:pointer;">
       Need an account? Sign Up
     </button>
     <div id="login-msg" style="margin-top:14px; font-size:13px; color:var(--text-sub,#888); min-height:18px;"></div>
+  </div>
+</div>
+
+<div id="change-pw-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9998;align-items:center;justify-content:center;">
+  <div style="background:var(--surface,#1a1a1a);border:1px solid var(--border,#333);border-radius:12px;padding:32px 40px;width:320px;text-align:center;">
+    <div style="font-size:16px;font-weight:700;margin-bottom:20px;">Change Password</div>
+    <input id="pw-new" type="password" placeholder="New password"
+      style="width:100%;box-sizing:border-box;background:var(--bg,#111);border:1px solid var(--border,#333);border-radius:6px;padding:10px 12px;font-size:14px;color:inherit;margin-bottom:10px;outline:none;"
+      onkeydown="if(event.key==='Enter') document.getElementById('pw-confirm').focus()">
+    <input id="pw-confirm" type="password" placeholder="Confirm new password"
+      style="width:100%;box-sizing:border-box;background:var(--bg,#111);border:1px solid var(--border,#333);border-radius:6px;padding:10px 12px;font-size:14px;color:inherit;margin-bottom:14px;outline:none;"
+      onkeydown="if(event.key==='Enter') submitPasswordChange()">
+    <button onclick="submitPasswordChange()" style="width:100%;background:var(--blue,#3b82f6);color:#fff;border:none;border-radius:6px;padding:10px;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:8px;">Update Password</button>
+    <button onclick="hideChangePassword()" style="width:100%;background:transparent;color:var(--text-sub,#888);border:1px solid var(--border,#333);border-radius:6px;padding:8px;font-size:13px;cursor:pointer;">Cancel</button>
+    <div id="pw-msg" style="margin-top:12px;font-size:13px;color:var(--text-sub,#888);min-height:18px;"></div>
   </div>
 </div>
 
@@ -64,7 +80,14 @@
     <button class="nav-btn" id="nav-test" onclick="switchPage('test')" style="color:var(--amber);opacity:0.7;" title="Sandbox experiment">Test</button>
     <div class="nav-spacer"></div>
     <button class="nav-gear" id="nav-settings" onclick="switchPage('settings')" title="Settings">⚙</button>
-    <button class="nav-gear" id="nav-auth" onclick="handleAuthBtn()" title="" style="font-size:11px;letter-spacing:0.02em;padding:0 10px;width:auto;">—</button>
+    <div style="position:relative;">
+      <button class="nav-gear" id="nav-auth" onclick="toggleAuthDropdown()" title="Account" style="font-size:11px;letter-spacing:0.02em;padding:0 10px;width:auto;">—</button>
+      <div id="auth-dropdown" style="display:none;position:absolute;right:0;top:calc(100% + 6px);background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px;min-width:200px;z-index:1000;box-shadow:0 4px 16px rgba(0,0,0,0.4);">
+        <div id="auth-dropdown-email" style="font-size:11px;color:var(--text-sub,#888);padding:6px 8px 10px;border-bottom:1px solid var(--border);margin-bottom:6px;font-family:var(--font-mono);"></div>
+        <button onclick="showChangePassword()" style="width:100%;text-align:left;background:none;border:none;color:inherit;padding:7px 8px;font-size:13px;cursor:pointer;border-radius:4px;" onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='none'">Change password</button>
+        <button onclick="confirmSignOut()" style="width:100%;text-align:left;background:none;border:none;color:var(--red,#ef4444);padding:7px 8px;font-size:13px;cursor:pointer;border-radius:4px;" onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='none'">Sign out</button>
+      </div>
+    </div>
   </div>
   <div class="app-body">
     <div class="sidebar" id="sidebar-panel">

@@ -318,6 +318,7 @@ function toggleAuthMode() {
   document.getElementById('login-subtitle').textContent = isSignUp ? 'Create your account' : 'Sign in to your account';
   document.querySelector('#login-screen button[onclick="authSubmit()"]').textContent = isSignUp ? 'Sign Up' : 'Sign In';
   document.querySelector('#login-screen button[onclick="toggleAuthMode()"]').textContent = isSignUp ? 'Already have an account? Sign In' : 'Need an account? Sign Up';
+  document.getElementById('forgot-pw-btn').style.display = isSignUp ? 'none' : '';
   document.getElementById('login-msg').textContent = '';
 }
 async function authSubmit() {
@@ -344,15 +345,67 @@ function updateAuthBtn() {
   if (currentUser) {
     const initials = currentUser.email.split('@')[0].slice(0, 2).toUpperCase();
     btn.textContent = initials;
-    btn.title = `Signed in as ${currentUser.email} — click to sign out`;
+    btn.title = 'Account';
+    const emailEl = document.getElementById('auth-dropdown-email');
+    if (emailEl) emailEl.textContent = currentUser.email;
   } else {
     btn.textContent = 'Sign In';
     btn.title = 'Sign in';
   }
 }
-function handleAuthBtn() {
-  if (currentUser) signOut();
-  else showLogin();
+
+function toggleAuthDropdown() {
+  if (!currentUser) { showLogin(); return; }
+  const dd = document.getElementById('auth-dropdown');
+  if (!dd) return;
+  const open = dd.style.display !== 'none';
+  dd.style.display = open ? 'none' : 'block';
+  if (!open) {
+    setTimeout(() => document.addEventListener('click', closeAuthDropdown, { once: true }), 0);
+  }
+}
+function closeAuthDropdown() {
+  const dd = document.getElementById('auth-dropdown');
+  if (dd) dd.style.display = 'none';
+}
+function confirmSignOut() {
+  closeAuthDropdown();
+  if (confirm('Sign out?')) signOut();
+}
+function showChangePassword() {
+  closeAuthDropdown();
+  const modal = document.getElementById('change-pw-modal');
+  if (modal) { modal.style.display = 'flex'; document.getElementById('pw-new').focus(); }
+  document.getElementById('pw-msg').textContent = '';
+  document.getElementById('pw-new').value = '';
+  document.getElementById('pw-confirm').value = '';
+}
+function hideChangePassword() {
+  const modal = document.getElementById('change-pw-modal');
+  if (modal) modal.style.display = 'none';
+}
+async function submitPasswordChange() {
+  const pw = document.getElementById('pw-new').value;
+  const confirm2 = document.getElementById('pw-confirm').value;
+  const msg = document.getElementById('pw-msg');
+  if (!pw) { msg.textContent = 'Enter a new password.'; return; }
+  if (pw !== confirm2) { msg.textContent = 'Passwords do not match.'; return; }
+  if (pw.length < 6) { msg.textContent = 'Password must be at least 6 characters.'; return; }
+  msg.textContent = 'Updating…';
+  const { error } = await sb.auth.updateUser({ password: pw });
+  if (error) { msg.textContent = error.message; return; }
+  msg.textContent = 'Password updated.';
+  setTimeout(hideChangePassword, 1200);
+}
+async function forgotPassword() {
+  const email = document.getElementById('login-email').value.trim();
+  const msg = document.getElementById('login-msg');
+  if (!email) { msg.textContent = 'Enter your email above first.'; return; }
+  msg.textContent = 'Sending reset link…';
+  const { error } = await sb.auth.resetPasswordForEmail(email, {
+    redirectTo: 'https://maxwellcrowe7.github.io/Fantasy-Football-Projections/'
+  });
+  msg.textContent = error ? error.message : `Reset link sent to ${email}.`;
 }
 function showApp() {
   document.getElementById('login-screen').style.display = 'none';
@@ -371,6 +424,12 @@ async function initAuth() {
 
   sb.auth.onAuthStateChange(async (event, session) => {
     currentUser = session?.user || null;
+    if (event === 'PASSWORD_RECOVERY') {
+      showApp();
+      bootApp();
+      showChangePassword();
+      return;
+    }
     if (currentUser) {
       showApp();
       await loadFromSupabase();
