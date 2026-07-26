@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FF Projection Tool</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body>
+
+<div id="ctx-menu" class="ctx-menu">
+  <div class="ctx-team-name" id="ctx-team-name"></div>
+  <div class="ctx-row">
+    <span class="ctx-label">Color</span>
+    <input type="color" class="ctx-color-picker" id="ctx-picker">
+    <input type="text" class="ctx-hex-input" id="ctx-hex" maxlength="7" placeholder="#000000">
+  </div>
+  <div class="ctx-actions">
+    <button class="ctx-reset" id="ctx-reset">reset to default</button>
+    <button class="ctx-apply" id="ctx-apply">Apply</button>
+  </div>
+</div>
+
+<div id="logo-lightbox" class="logo-lightbox" onclick="closeLightbox(event)">
+  <div class="logo-lightbox-inner" onclick="event.stopPropagation()">
+    <img id="lightbox-img" src="" alt="">
+    <div class="logo-lightbox-name" id="lightbox-name"></div>
+    <div class="logo-lightbox-file" id="lightbox-file"></div>
+  </div>
+</div>
+
+<div class="app">
+  <div class="top-nav">
+    <button class="nav-btn active" id="nav-projections" onclick="switchPage('projections')">Projections</button>
+    <button class="nav-btn" id="nav-rankings" onclick="switchPage('rankings')">Rankings</button>
+    <button class="nav-btn" id="nav-draft" onclick="switchPage('draft')">Draft</button>
+    <button class="nav-btn" id="nav-data" onclick="switchPage('data')">Data</button>
+    <button class="nav-btn" id="nav-test" onclick="switchPage('test')" style="color:var(--amber);opacity:0.7;" title="Sandbox experiment">Test</button>
+    <div class="nav-spacer"></div>
+    <button class="nav-gear" id="nav-settings" onclick="switchPage('settings')" title="Settings">⚙</button>
+  </div>
+  <div class="app-body">
+    <div class="sidebar" id="sidebar-panel">
+      <div class="sidebar-header">
+        <h1>Projections</h1>
+        <p>2025 season · all 32 teams</p>
+      </div>
+      <div class="sidebar-scroll" id="sidebar"></div>
+    </div>
+    <div class="main" id="main">
+      <div class="placeholder">
+        <div class="big">SELECT A TEAM</div>
+        <p>choose from the left panel to begin projecting</p>
+      </div>
+    </div>
+    <div class="rankings-page" id="rankings-page" style="display:none;">
+      <div class="rankings-toolbar">
+        <div class="view-toggle">
+          <button class="view-btn active" id="vbtn-stats" onclick="setRankView('stats')">Stats</button>
+          <button class="view-btn" id="vbtn-rankings" onclick="setRankView('rankings')">Rankings</button>
+        </div>
+        <div class="pos-tabs">
+          <button class="pos-tab active-qb active" id="rtab-QB" onclick="setRankPos('QB')">QB</button>
+          <button class="pos-tab" id="rtab-RB" onclick="setRankPos('RB')">RB</button>
+          <button class="pos-tab" id="rtab-WR" onclick="setRankPos('WR')">WR</button>
+          <button class="pos-tab" id="rtab-TE" onclick="setRankPos('TE')">TE</button>
+        </div>
+        <div id="qb-rec-toggle" style="display:none;">
+          <div class="view-toggle">
+            <button class="view-btn active" id="qbrec-pass" onclick="setQbRecMode(false)">Pass/Rush</button>
+            <button class="view-btn" id="qbrec-rec" onclick="setQbRecMode(true)">Rec</button>
+          </div>
+        </div>
+        <div id="skill-pass-toggle" style="display:none;">
+          <div class="view-toggle">
+            <button class="view-btn active" id="skill-rushrec" onclick="setSkillPassMode(false)">Rush/Rec</button>
+            <button class="view-btn" id="skill-pass" onclick="setSkillPassMode(true)">Pass</button>
+          </div>
+        </div>
+        <div style="margin-left:auto;" id="scoring-preset-selector"></div>
+      </div>
+      <div class="rankings-content" id="rankings-content"></div>
+    </div>
+    <div class="data-page" id="data-page" style="display:none;">
+      <div class="data-toolbar" id="data-toolbar"></div>
+      <div class="data-content" id="data-content"></div>
+    </div>
+    <div class="draft-page" id="draft-page" style="display:none;"></div>
+    <div class="settings-page" id="settings-page" style="display:none;"></div>
+    <div class="test-page" id="test-page" style="display:none;"></div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
