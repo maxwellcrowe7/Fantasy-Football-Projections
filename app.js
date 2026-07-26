@@ -5694,22 +5694,22 @@ function undraftPlayer(playerId, andAllAfter) {
 
 // ─── End draft page ───────────────────────────────────────────────────────────
 let _booted = false;
-async function bootApp() {
+function bootApp() {
   if (_booted) return;
   _booted = true;
   loadStatMap();
-  const loadedFromCloud = await loadHistFromSupabase();
-  if (!loadedFromCloud) loadHistEdits();
+  loadHistEdits(); // load localStorage cache immediately — no waiting
   buildSidebar();
-  // Re-render data page if it was the active page when hist data finishes loading
-  const lastPage = localStorage.getItem('ff_last_page');
-  if (lastPage === 'data') renderDataPage();
   if (selectedTeam) {
     refreshSidebarDots();
     renderMain();
   }
   loadStatMap();
   applyAllColorOverrides();
+  // Fetch fresh hist data from cloud in background
+  loadHistFromSupabase().then(loaded => {
+    if (loaded && localStorage.getItem('ff_last_page') === 'data') renderDataPage();
+  });
 }
 
 initAuth();
