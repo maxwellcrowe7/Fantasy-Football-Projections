@@ -1662,7 +1662,10 @@
   .test-reset-btn:hover { border-color: var(--red); color: var(--red); }
   .test-svg { flex: 1; width: 100%; height: 100%; }
 
-/* View-only mode — disable all editing interactions */
-body.viewing-mode .app-body { pointer-events: none; }
-body.viewing-mode .top-nav { pointer-events: auto; }
-body.viewing-mode #app-view-banner { pointer-events: auto; }
+/* View-only mode — disable editing controls, keep navigation free */
+body.viewing-mode input[type="text"],
+body.viewing-mode input[type="number"] { pointer-events: none; opacity: 0.7; }
+body.viewing-mode .ts-lock-icon,
+body.viewing-mode .ts-spinner,
+body.viewing-mode .add-player-btn,
+body.viewing-mode .add-player-widget { pointer-events: none; opacity: 0.4; }
