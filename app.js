@@ -226,7 +226,7 @@ let currentUser = null;
 let sbSaveTimer = null;
 
 function sbSave() {
-  if (!currentUser) return;
+  if (!currentUser || viewingUser) return;
   clearTimeout(sbSaveTimer);
   sbSaveTimer = setTimeout(async () => {
     const payload = buildFullPayload();
@@ -445,6 +445,95 @@ async function initAuth() {
 
   const { data: { session } } = await sb.auth.getSession();
   if (!session) showLogin();
+}
+// ─── Sharing ──────────────────────────────────────────────────────────────────
+let viewingUser = null; // { userId, email } when in view-only mode
+
+function openSharePanel() {
+  const modal = document.getElementById('share-modal');
+  if (modal) { modal.style.display = 'flex'; loadShares(); }
+}
+function closeSharePanel() {
+  const modal = document.getElementById('share-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+async function loadShares() {
+  const outEl = document.getElementById('share-outgoing-list');
+  const inEl  = document.getElementById('share-incoming-list');
+  outEl.innerHTML = '<div style="font-size:12px;color:var(--text-sub,#888);font-family:var(--font-mono);">Loading…</div>';
+  inEl.innerHTML  = '<div style="font-size:12px;color:var(--text-sub,#888);font-family:var(--font-mono);">Loading…</div>';
+
+  const [outRes, inRes] = await Promise.all([
+    sb.from('ff_shares').select('id, viewer_email, created_at').eq('owner_id', currentUser.id),
+    sb.from('ff_shares').select('id, owner_id, owner_email').eq('viewer_email', currentUser.email)
+  ]);
+
+  // Outgoing
+  const out = outRes.data || [];
+  outEl.innerHTML = out.length === 0
+    ? '<div style="font-size:12px;color:var(--text-sub,#888);font-family:var(--font-mono);">Not shared with anyone yet.</div>'
+    : out.map(s => `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--surface-2,#222);border-radius:6px;margin-bottom:6px;">
+          <span style="font-size:13px;font-family:var(--font-mono);">${s.viewer_email}</span>
+          <button onclick="removeShare('${s.id}')" style="background:none;border:none;color:var(--red,#ef4444);font-size:16px;cursor:pointer;padding:0 4px;" title="Remove">×</button>
+        </div>`).join('');
+
+  // Incoming
+  const inc = inRes.data || [];
+  inEl.innerHTML = inc.length === 0
+    ? '<div style="font-size:12px;color:var(--text-sub,#888);font-family:var(--font-mono);">Nobody has shared with you yet.</div>'
+    : inc.map(s => `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--surface-2,#222);border-radius:6px;margin-bottom:6px;cursor:pointer;" onclick="viewSharedProjections('${s.owner_id}','${s.owner_email || s.owner_id}')">
+          <span style="font-size:13px;font-family:var(--font-mono);">${s.owner_email || s.owner_id}</span>
+          <span style="font-size:11px;color:var(--blue,#3b82f6);">View →</span>
+        </div>`).join('');
+}
+
+async function addShare() {
+  const email = document.getElementById('share-email-input').value.trim().toLowerCase();
+  const msg   = document.getElementById('share-msg');
+  if (!email) return;
+  msg.textContent = 'Adding…';
+  const { error } = await sb.from('ff_shares').insert({
+    owner_id:    currentUser.id,
+    owner_email: currentUser.email,
+    viewer_email: email
+  });
+  if (error) { msg.textContent = error.message; return; }
+  document.getElementById('share-email-input').value = '';
+  msg.textContent = `Shared with ${email}.`;
+  loadShares();
+}
+
+async function removeShare(id) {
+  await sb.from('ff_shares').delete().eq('id', id);
+  loadShares();
+}
+
+async function viewSharedProjections(ownerId, ownerEmail) {
+  closeSharePanel();
+  const { data } = await sb.from('app_state').select('data').eq('user_id', ownerId).eq('app', SB_APP).maybeSingle();
+  if (!data?.data) { alert(`No projections found for ${ownerEmail}.`); return; }
+  viewingUser = { userId: ownerId, email: ownerEmail };
+  applyFullPayload(data.data);
+  document.getElementById('app-view-banner').style.display = 'flex';
+  document.getElementById('view-banner-email').textContent = ownerEmail;
+  document.body.classList.add('viewing-mode');
+  selectedTeam = data.data.selectedTeam || null;
+  buildSidebar();
+  if (selectedTeam) { refreshSidebarDots(); renderMain(); }
+  applyAllColorOverrides();
+}
+
+async function returnToOwnProjections() {
+  viewingUser = null;
+  document.getElementById('app-view-banner').style.display = 'none';
+  document.body.classList.remove('viewing-mode');
+  await loadFromSupabase();
+  buildSidebar();
+  if (selectedTeam) { refreshSidebarDots(); renderMain(); }
+  applyAllColorOverrides();
 }
 // ─────────────────────────────────────────────────────────────────────────────
 

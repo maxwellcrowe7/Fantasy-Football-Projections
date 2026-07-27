@@ -35,6 +35,29 @@
   </div>
 </div>
 
+
+<div id="share-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9998;align-items:center;justify-content:center;">
+  <div style="background:var(--surface,#1a1a1a);border:1px solid var(--border,#333);border-radius:12px;padding:32px 36px;width:420px;max-height:80vh;overflow-y:auto;">
+    <div style="font-size:16px;font-weight:700;margin-bottom:6px;">Share Projections</div>
+    <div style="font-size:11px;color:var(--text-sub,#888);margin-bottom:24px;font-family:var(--font-mono);">Viewers can see your projections but cannot edit them.</div>
+
+    <div style="font-size:12px;font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-sub,#888);">Share with</div>
+    <div style="display:flex;gap:8px;margin-bottom:8px;">
+      <input id="share-email-input" type="email" placeholder="viewer@email.com"
+        style="flex:1;background:var(--bg,#111);border:1px solid var(--border,#333);border-radius:6px;padding:9px 12px;font-size:13px;color:inherit;outline:none;"
+        onkeydown="if(event.key==='Enter') addShare()">
+      <button onclick="addShare()" style="background:var(--blue,#3b82f6);color:#fff;border:none;border-radius:6px;padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer;">Add</button>
+    </div>
+    <div id="share-outgoing-list" style="margin-bottom:28px;"></div>
+
+    <div style="font-size:12px;font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-sub,#888);">Shared with you</div>
+    <div id="share-incoming-list"></div>
+
+    <div id="share-msg" style="margin-top:16px;font-size:12px;color:var(--text-sub,#888);min-height:16px;"></div>
+    <button onclick="closeSharePanel()" style="margin-top:16px;width:100%;background:transparent;color:var(--text-sub,#888);border:1px solid var(--border,#333);border-radius:6px;padding:8px;font-size:13px;cursor:pointer;">Close</button>
+  </div>
+</div>
+
 <div id="change-pw-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9998;align-items:center;justify-content:center;">
   <div style="background:var(--surface,#1a1a1a);border:1px solid var(--border,#333);border-radius:12px;padding:32px 40px;width:320px;text-align:center;">
     <div style="font-size:16px;font-weight:700;margin-bottom:20px;">Change Password</div>
@@ -79,6 +102,7 @@
     <button class="nav-btn" id="nav-data" onclick="switchPage('data')">Data</button>
     <button class="nav-btn" id="nav-test" onclick="switchPage('test')" style="color:var(--amber);opacity:0.7;" title="Sandbox experiment">Test</button>
     <div class="nav-spacer"></div>
+    <button class="nav-btn" id="nav-share" onclick="openSharePanel()" style="font-size:12px;opacity:0.8;">Share</button>
     <button class="nav-gear" id="nav-settings" onclick="switchPage('settings')" title="Settings">⚙</button>
     <div style="position:relative;">
       <button class="nav-gear" id="nav-auth" onclick="toggleAuthDropdown()" title="Account" style="font-size:11px;letter-spacing:0.02em;padding:0 10px;width:auto;">—</button>
@@ -88,6 +112,10 @@
         <button onclick="confirmSignOut()" style="width:100%;text-align:left;background:none;border:none;color:var(--red,#ef4444);padding:7px 8px;font-size:13px;cursor:pointer;border-radius:4px;" onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='none'">Sign out</button>
       </div>
     </div>
+  </div>
+  <div id="app-view-banner" style="display:none;background:var(--amber,#f59e0b);color:#000;padding:6px 16px;font-size:12px;font-weight:600;align-items:center;gap:12px;font-family:var(--font-mono);">
+    <span>👁 Viewing <span id="view-banner-email"></span>'s projections — read only</span>
+    <button onclick="returnToOwnProjections()" style="background:rgba(0,0,0,0.15);border:none;border-radius:4px;padding:3px 10px;font-size:11px;font-weight:700;cursor:pointer;">← Back to mine</button>
   </div>
   <div class="app-body">
     <div class="sidebar" id="sidebar-panel">
