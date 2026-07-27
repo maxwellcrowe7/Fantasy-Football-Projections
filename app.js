@@ -280,7 +280,7 @@ function applyFullPayload(payload) {
 }
 
 async function loadFromSupabase() {
-  const { data } = await sb.from('app_state').select('data').eq('app', SB_APP).maybeSingle();
+  const { data } = await sb.from('app_state').select('data').eq('app', SB_APP).eq('user_id', currentUser.id).maybeSingle();
   if (data?.data && applyFullPayload(data.data)) return true;
   loadState();
   return false;
@@ -2636,6 +2636,20 @@ function importData() {
   input.click();
 }
 
+async function clearAllData() {
+  if (!confirm('Clear all your projections, rankings, and draft data? This cannot be undone.')) return;
+  // Clear localStorage
+  const keysToRemove = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k && (k.startsWith('ff_') || k === STORAGE_KEY)) keysToRemove.push(k);
+  }
+  keysToRemove.forEach(k => localStorage.removeItem(k));
+  // Clear Supabase
+  if (currentUser) await sb.from('app_state').delete().eq('user_id', currentUser.id).eq('app', SB_APP);
+  location.reload();
+}
+
 function clearHistData() {
   if (!confirm('Clear all historical data? You will need to reimport your CSV.')) return;
   localStorage.removeItem('ff_hist_data');
@@ -2903,6 +2917,7 @@ function renderSettings() {
       <div style="display:flex;gap:10px;margin-bottom:32px;">
         <button class="add-player-btn" onclick="exportData()" style="font-size:12px;padding:8px 16px;">↓ Export data</button>
         <button class="add-player-btn" onclick="importData()" style="font-size:12px;padding:8px 16px;">↑ Import data</button>
+        <button class="add-player-btn" onclick="clearAllData()" style="font-size:12px;padding:8px 16px;color:var(--red);border-color:var(--red);">✕ Clear all data</button>
       </div>
       <div class="settings-section-title">Account</div>
       <p style="font-size:11px;color:var(--text-3);margin-bottom:12px;font-family:var(--font-mono);">
