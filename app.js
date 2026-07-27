@@ -2800,6 +2800,7 @@ function buildStatMapTable() {
 function updateColDisplay(col, abbr) {
   COL_DISPLAY[col] = abbr.trim() || col;
   localStorage.setItem('ff_col_display', JSON.stringify(COL_DISPLAY));
+  sbSave();
   // Re-render data table headers if on data page, and projection table always
   if (currentPage === 'data') renderDataTable();
   if (selectedTeam) renderMain();
@@ -3246,6 +3247,7 @@ function getRankingsState() {
 }
 function saveRankingsState() {
   try { localStorage.setItem("ff_rankings_v1", JSON.stringify(rankingsState)); } catch(e) {}
+  sbSave();
 }
 let rankingsState = getRankingsState();
 // rankingsState[pos] = { order: [id, id, ...], tiers: [afterIndex, afterIndex, ...] }
@@ -4078,6 +4080,7 @@ function calcFpts(p) {
 function saveScoringPresets() {
   localStorage.setItem('ff_scoring_presets', JSON.stringify(scoringPresets));
   localStorage.setItem('ff_active_scoring_preset', activeScoringPreset);
+  sbSave();
 }
 let teamStatsCollapsed = JSON.parse(localStorage.getItem("ff_ts_collapsed") || "{}");
 let dataSortCol = "Year";
@@ -5216,7 +5219,7 @@ function loadDraftState() {
   try { return JSON.parse(localStorage.getItem(DRAFT_STORAGE_KEY) || 'null') || { leagues: [], activeLeague: 0 }; }
   catch(e) { return { leagues: [], activeLeague: 0 }; }
 }
-function saveDraftState() { localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(draftState)); }
+function saveDraftState() { localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(draftState)); sbSave(); }
 let draftState = loadDraftState();
 function getActiveLeague() { return draftState.leagues[draftState.activeLeague] || null; }
 
