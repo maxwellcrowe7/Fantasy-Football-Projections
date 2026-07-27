@@ -12,64 +12,64 @@
 </head>
 <body>
 
-<div id="login-screen" style="display:none; position:fixed; inset:0; background:var(--bg,#111); z-index:9999; display:flex; align-items:center; justify-content:center;">
-  <div style="background:var(--surface,#1a1a1a); border:1px solid var(--border,#333); border-radius:12px; padding:40px 48px; width:360px; text-align:center;">
+<div id="login-screen" style="display:none; position:fixed; inset:0; background:var(--bg,#eceae4); z-index:9999; display:flex; align-items:center; justify-content:center;">
+  <div style="background:var(--bg-2,#fff); border:1px solid var(--border,#d0cdc6); border-radius:12px; padding:40px 48px; width:360px; text-align:center; color:var(--text,#1a1a18);">
     <div style="font-size:28px; font-weight:700; letter-spacing:-0.5px; margin-bottom:6px;">FF Projections</div>
-    <div style="color:var(--text-sub,#888); font-size:13px; margin-bottom:28px;" id="login-subtitle">Sign in to your account</div>
+    <div style="color:var(--text-3,#96948e); font-size:13px; margin-bottom:28px;" id="login-subtitle">Sign in to your account</div>
     <input id="login-email" type="email" placeholder="your@email.com"
-      style="width:100%; box-sizing:border-box; background:var(--bg,#111); border:1px solid var(--border,#333); border-radius:6px; padding:10px 12px; font-size:14px; color:inherit; margin-bottom:10px; outline:none;"
+      style="width:100%; box-sizing:border-box; background:var(--bg,#eceae4); border:1px solid var(--border,#d0cdc6); border-radius:6px; padding:10px 12px; font-size:14px; color:var(--text,#1a1a18); margin-bottom:10px; outline:none;"
       onkeydown="if(event.key==='Enter') document.getElementById('login-password').focus()">
     <input id="login-password" type="password" placeholder="password"
-      style="width:100%; box-sizing:border-box; background:var(--bg,#111); border:1px solid var(--border,#333); border-radius:6px; padding:10px 12px; font-size:14px; color:inherit; margin-bottom:14px; outline:none;"
+      style="width:100%; box-sizing:border-box; background:var(--bg,#eceae4); border:1px solid var(--border,#d0cdc6); border-radius:6px; padding:10px 12px; font-size:14px; color:var(--text,#1a1a18); margin-bottom:14px; outline:none;"
       onkeydown="if(event.key==='Enter') authSubmit()">
     <button onclick="authSubmit()"
       style="width:100%; background:var(--blue,#3b82f6); color:#fff; border:none; border-radius:6px; padding:10px; font-size:14px; font-weight:600; cursor:pointer; margin-bottom:10px;">
       Sign In
     </button>
-    <button id="forgot-pw-btn" onclick="forgotPassword()" style="width:100%;background:transparent;color:var(--text-sub,#888);border:none;padding:4px;font-size:12px;cursor:pointer;margin-bottom:4px;">Forgot password?</button>
+    <button id="forgot-pw-btn" onclick="forgotPassword()" style="width:100%;background:transparent;color:var(--text-3,#96948e);border:none;padding:4px;font-size:12px;cursor:pointer;margin-bottom:4px;">Forgot password?</button>
     <button onclick="toggleAuthMode()"
-      style="width:100%; background:transparent; color:var(--text-sub,#888); border:1px solid var(--border,#333); border-radius:6px; padding:8px; font-size:13px; cursor:pointer;">
+      style="width:100%; background:transparent; color:var(--text-2,#55534e); border:1px solid var(--border,#d0cdc6); border-radius:6px; padding:8px; font-size:13px; cursor:pointer;">
       Need an account? Sign Up
     </button>
-    <div id="login-msg" style="margin-top:14px; font-size:13px; color:var(--text-sub,#888); min-height:18px;"></div>
+    <div id="login-msg" style="margin-top:14px; font-size:13px; color:var(--text-3,#96948e); min-height:18px;"></div>
   </div>
 </div>
 
 
-<div id="share-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9998;align-items:center;justify-content:center;">
-  <div style="background:var(--surface,#1a1a1a);border:1px solid var(--border,#333);border-radius:12px;padding:32px 36px;width:420px;max-height:80vh;overflow-y:auto;">
+<div id="share-modal" onclick="closeSharePanel()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:9998;align-items:center;justify-content:center;">
+  <div onclick="event.stopPropagation()" style="background:var(--bg-2,#fff);border:1px solid var(--border,#d0cdc6);border-radius:12px;padding:28px 32px;width:420px;max-height:80vh;overflow-y:auto;color:var(--text,#1a1a18);">
     <div style="font-size:16px;font-weight:700;margin-bottom:6px;">Share Projections</div>
-    <div style="font-size:11px;color:var(--text-sub,#888);margin-bottom:24px;font-family:var(--font-mono);">Viewers can see your projections but cannot edit them.</div>
+    <div style="font-size:11px;color:var(--text-3,#96948e);margin-bottom:24px;font-family:var(--font-mono);">Viewers can see your projections but cannot edit them.</div>
 
-    <div style="font-size:12px;font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-sub,#888);">Share with</div>
+    <div style="font-size:11px;font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-3,#96948e);">Share with</div>
     <div style="display:flex;gap:8px;margin-bottom:8px;">
       <input id="share-email-input" type="email" placeholder="viewer@email.com"
-        style="flex:1;background:var(--bg,#111);border:1px solid var(--border,#333);border-radius:6px;padding:9px 12px;font-size:13px;color:inherit;outline:none;"
+        style="flex:1;background:var(--bg,#eceae4);border:1px solid var(--border,#d0cdc6);border-radius:6px;padding:9px 12px;font-size:13px;color:var(--text,#1a1a18);outline:none;"
         onkeydown="if(event.key==='Enter') addShare()">
       <button onclick="addShare()" style="background:var(--blue,#3b82f6);color:#fff;border:none;border-radius:6px;padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer;">Add</button>
     </div>
     <div id="share-outgoing-list" style="margin-bottom:28px;"></div>
 
-    <div style="font-size:12px;font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-sub,#888);">Shared with you</div>
+    <div style="font-size:11px;font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-3,#96948e);">Shared with you</div>
     <div id="share-incoming-list"></div>
 
-    <div id="share-msg" style="margin-top:16px;font-size:12px;color:var(--text-sub,#888);min-height:16px;"></div>
-    <button onclick="closeSharePanel()" style="margin-top:16px;width:100%;background:transparent;color:var(--text-sub,#888);border:1px solid var(--border,#333);border-radius:6px;padding:8px;font-size:13px;cursor:pointer;">Close</button>
+    <div id="share-msg" style="margin-top:16px;font-size:12px;color:var(--text-3,#96948e);min-height:16px;"></div>
+    <button onclick="closeSharePanel()" style="margin-top:16px;width:100%;background:transparent;color:var(--text-2,#55534e);border:1px solid var(--border,#d0cdc6);border-radius:6px;padding:8px;font-size:13px;cursor:pointer;">Close</button>
   </div>
 </div>
 
-<div id="change-pw-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9998;align-items:center;justify-content:center;">
-  <div style="background:var(--surface,#1a1a1a);border:1px solid var(--border,#333);border-radius:12px;padding:32px 40px;width:320px;text-align:center;">
+<div id="change-pw-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:9998;align-items:center;justify-content:center;">
+  <div style="background:var(--bg-2,#fff);border:1px solid var(--border,#d0cdc6);border-radius:12px;padding:32px 40px;width:320px;text-align:center;color:var(--text,#1a1a18);">
     <div style="font-size:16px;font-weight:700;margin-bottom:20px;">Change Password</div>
     <input id="pw-new" type="password" placeholder="New password"
-      style="width:100%;box-sizing:border-box;background:var(--bg,#111);border:1px solid var(--border,#333);border-radius:6px;padding:10px 12px;font-size:14px;color:inherit;margin-bottom:10px;outline:none;"
+      style="width:100%;box-sizing:border-box;background:var(--bg,#eceae4);border:1px solid var(--border,#d0cdc6);border-radius:6px;padding:10px 12px;font-size:14px;color:var(--text,#1a1a18);margin-bottom:10px;outline:none;"
       onkeydown="if(event.key==='Enter') document.getElementById('pw-confirm').focus()">
     <input id="pw-confirm" type="password" placeholder="Confirm new password"
-      style="width:100%;box-sizing:border-box;background:var(--bg,#111);border:1px solid var(--border,#333);border-radius:6px;padding:10px 12px;font-size:14px;color:inherit;margin-bottom:14px;outline:none;"
+      style="width:100%;box-sizing:border-box;background:var(--bg,#eceae4);border:1px solid var(--border,#d0cdc6);border-radius:6px;padding:10px 12px;font-size:14px;color:var(--text,#1a1a18);margin-bottom:14px;outline:none;"
       onkeydown="if(event.key==='Enter') submitPasswordChange()">
     <button onclick="submitPasswordChange()" style="width:100%;background:var(--blue,#3b82f6);color:#fff;border:none;border-radius:6px;padding:10px;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:8px;">Update Password</button>
-    <button onclick="hideChangePassword()" style="width:100%;background:transparent;color:var(--text-sub,#888);border:1px solid var(--border,#333);border-radius:6px;padding:8px;font-size:13px;cursor:pointer;">Cancel</button>
-    <div id="pw-msg" style="margin-top:12px;font-size:13px;color:var(--text-sub,#888);min-height:18px;"></div>
+    <button onclick="hideChangePassword()" style="width:100%;background:transparent;color:var(--text-2,#55534e);border:1px solid var(--border,#d0cdc6);border-radius:6px;padding:8px;font-size:13px;cursor:pointer;">Cancel</button>
+    <div id="pw-msg" style="margin-top:12px;font-size:13px;color:var(--text-3,#96948e);min-height:18px;"></div>
   </div>
 </div>
 
@@ -102,15 +102,26 @@
     <button class="nav-btn" id="nav-data" onclick="switchPage('data')">Data</button>
     <button class="nav-btn" id="nav-test" onclick="switchPage('test')" style="color:var(--amber);opacity:0.7;" title="Sandbox experiment">Test</button>
     <div class="nav-spacer"></div>
-    <button class="nav-btn" id="nav-share" onclick="openSharePanel()" style="font-size:12px;opacity:0.8;">Share</button>
-    <button class="nav-gear" id="nav-settings" onclick="switchPage('settings')" title="Settings">⚙</button>
-    <div style="position:relative;">
-      <button class="nav-gear" id="nav-auth" onclick="toggleAuthDropdown()" title="Account" style="font-size:11px;letter-spacing:0.02em;padding:0 10px;width:auto;">—</button>
-      <div id="auth-dropdown" style="display:none;position:absolute;right:0;top:calc(100% + 6px);background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px;min-width:200px;z-index:1000;box-shadow:0 4px 16px rgba(0,0,0,0.4);">
-        <div id="auth-dropdown-email" style="font-size:11px;color:var(--text-sub,#888);padding:6px 8px 10px;border-bottom:1px solid var(--border);margin-bottom:6px;font-family:var(--font-mono);"></div>
-        <button onclick="showChangePassword()" style="width:100%;text-align:left;background:none;border:none;color:inherit;padding:7px 8px;font-size:13px;cursor:pointer;border-radius:4px;" onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='none'">Change password</button>
-        <button onclick="confirmSignOut()" style="width:100%;text-align:left;background:none;border:none;color:var(--red,#ef4444);padding:7px 8px;font-size:13px;cursor:pointer;border-radius:4px;" onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='none'">Sign out</button>
+    <div style="display:flex;align-items:center;gap:16px;padding-right:12px;">
+    <button class="nav-btn" id="nav-share" onclick="openSharePanel()" style="font-size:12px;opacity:0.8;padding:6px 0;">Share</button>
+    <button class="nav-gear" id="nav-settings" onclick="switchPage('settings')" title="Settings" style="padding:4px;">⚙</button>
+    <div style="position:relative;display:flex;align-items:center;">
+      <button id="nav-auth" onclick="toggleAuthDropdown()" title="Account"
+        style="width:28px;height:28px;border-radius:50%;border:2px solid var(--border-2,#b8b5ae);background:var(--bg-3,#f0ede8);color:var(--text,#1a1a18);font-size:10px;font-weight:700;letter-spacing:0.05em;cursor:pointer;padding:0;line-height:1;">—</button>
+      <div id="auth-dropdown" style="display:none;position:absolute;right:0;top:calc(100% + 10px);background:var(--bg-2,#fff);border:1px solid var(--border,#d0cdc6);border-radius:8px;padding:8px;min-width:220px;z-index:9990;box-shadow:0 4px 12px rgba(0,0,0,0.12);">
+        <div id="auth-dropdown-email" style="font-size:11px;color:var(--text-3,#96948e);padding:6px 8px 10px;border-bottom:1px solid var(--border,#d0cdc6);margin-bottom:6px;font-family:var(--font-mono);"></div>
+        <div style="padding:6px 8px 4px;display:flex;align-items:center;gap:6px;">
+          <input id="display-name-input" type="text" placeholder="Initials" maxlength="20"
+            style="flex:1;background:var(--bg,#eceae4);border:1px solid var(--border,#d0cdc6);border-radius:4px;padding:5px 8px;font-size:12px;color:var(--text,#1a1a18);outline:none;"
+            onkeydown="if(event.key==='Enter') saveDisplayName()">
+          <button onclick="saveDisplayName()" style="background:var(--blue,#3b82f6);color:#fff;border:none;border-radius:4px;padding:5px 8px;font-size:11px;font-weight:600;cursor:pointer;">Save</button>
+        </div>
+        <div style="font-size:10px;color:var(--text-3,#96948e);padding:0 8px 8px;font-family:var(--font-mono);">Sets your initials in the nav</div>
+        <div style="border-top:1px solid var(--border,#d0cdc6);margin:4px 0;"></div>
+        <button onclick="showChangePassword()" style="width:100%;text-align:left;background:none;border:none;color:var(--text,#1a1a18);padding:7px 8px;font-size:13px;cursor:pointer;border-radius:4px;" onmouseover="this.style.background='var(--bg,#eceae4)'" onmouseout="this.style.background='none'">Change password</button>
+        <button onclick="confirmSignOut()" style="width:100%;text-align:left;background:none;border:none;color:var(--red,#ef4444);padding:7px 8px;font-size:13px;cursor:pointer;border-radius:4px;" onmouseover="this.style.background='var(--bg,#eceae4)'" onmouseout="this.style.background='none'">Sign out</button>
       </div>
+    </div>
     </div>
   </div>
   <div id="app-view-banner" style="display:none;background:var(--amber,#f59e0b);color:#000;padding:6px 16px;font-size:12px;font-weight:600;align-items:center;gap:12px;font-family:var(--font-mono);">

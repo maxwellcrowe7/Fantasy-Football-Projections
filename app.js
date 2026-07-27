@@ -343,19 +343,39 @@ async function signOut() {
   await sb.auth.signOut();
 }
 
+function getInitials() {
+  const name = localStorage.getItem('ff_display_name') || '';
+  if (name.trim()) {
+    const parts = name.trim().split(/\s+/);
+    return parts.length >= 2
+      ? (parts[0][0] + parts[1][0]).toUpperCase()
+      : name.slice(0, 2).toUpperCase();
+  }
+  return currentUser ? currentUser.email.split('@')[0].slice(0, 2).toUpperCase() : '?';
+}
+function saveDisplayName() {
+  const val = document.getElementById('display-name-input').value.trim();
+  if (val) localStorage.setItem('ff_display_name', val);
+  else localStorage.removeItem('ff_display_name');
+  updateAuthBtn();
+  closeAuthDropdown();
+}
 function updateAuthBtn() {
   const btn = document.getElementById('nav-auth');
   if (!btn) return;
   if (currentUser) {
-    const initials = currentUser.email.split('@')[0].slice(0, 2).toUpperCase();
-    btn.textContent = initials;
+    btn.textContent = getInitials();
     btn.title = 'Account';
     const emailEl = document.getElementById('auth-dropdown-email');
     if (emailEl) emailEl.textContent = currentUser.email;
+    const nameInput = document.getElementById('display-name-input');
+    if (nameInput) nameInput.value = localStorage.getItem('ff_display_name') || '';
   } else {
-    btn.textContent = 'Sign In';
+    btn.textContent = '?';
     btn.title = 'Sign in';
   }
+  const testTab = document.getElementById('nav-test');
+  if (testTab) testTab.style.display = currentUser?.email === ADMIN_EMAIL ? '' : 'none';
 }
 
 function toggleAuthDropdown() {
@@ -365,12 +385,21 @@ function toggleAuthDropdown() {
   const open = dd.style.display !== 'none';
   dd.style.display = open ? 'none' : 'block';
   if (!open) {
-    setTimeout(() => document.addEventListener('click', closeAuthDropdown, { once: true }), 0);
+    setTimeout(() => document.addEventListener('click', _authDropdownOutsideClick), 0);
+  }
+}
+function _authDropdownOutsideClick(e) {
+  const dd = document.getElementById('auth-dropdown');
+  const btn = document.getElementById('nav-auth');
+  if (dd && !dd.contains(e.target) && e.target !== btn) {
+    dd.style.display = 'none';
+    document.removeEventListener('click', _authDropdownOutsideClick);
   }
 }
 function closeAuthDropdown() {
   const dd = document.getElementById('auth-dropdown');
   if (dd) dd.style.display = 'none';
+  document.removeEventListener('click', _authDropdownOutsideClick);
 }
 function confirmSignOut() {
   closeAuthDropdown();
@@ -472,21 +501,20 @@ async function loadShares() {
   // Outgoing
   const out = outRes.data || [];
   outEl.innerHTML = out.length === 0
-    ? '<div style="font-size:12px;color:var(--text-sub,#888);font-family:var(--font-mono);">Not shared with anyone yet.</div>'
+    ? '<div style="font-size:12px;color:var(--text-3,#96948e);font-family:var(--font-mono);">Not shared with anyone yet.</div>'
     : out.map(s => `
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--surface-2,#222);border-radius:6px;margin-bottom:6px;">
-          <span style="font-size:13px;font-family:var(--font-mono);">${s.viewer_email}</span>
-          <button onclick="removeShare('${s.id}')" style="background:none;border:none;color:var(--red,#ef4444);font-size:16px;cursor:pointer;padding:0 4px;" title="Remove">×</button>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--bg,#eceae4);border:1px solid var(--border,#d0cdc6);border-radius:6px;margin-bottom:6px;">
+          <span style="font-size:13px;font-family:var(--font-mono);color:var(--text,#1a1a18);">${s.viewer_email}</span>
+          <button onclick="removeShare('${s.id}')" style="background:none;border:none;color:var(--red,#ef4444);font-size:18px;cursor:pointer;padding:0 4px;line-height:1;" title="Remove">×</button>
         </div>`).join('');
 
-  // Incoming
   const inc = inRes.data || [];
   inEl.innerHTML = inc.length === 0
-    ? '<div style="font-size:12px;color:var(--text-sub,#888);font-family:var(--font-mono);">Nobody has shared with you yet.</div>'
+    ? '<div style="font-size:12px;color:var(--text-3,#96948e);font-family:var(--font-mono);">Nobody has shared with you yet.</div>'
     : inc.map(s => `
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--surface-2,#222);border-radius:6px;margin-bottom:6px;cursor:pointer;" onclick="viewSharedProjections('${s.owner_id}','${s.owner_email || s.owner_id}')">
-          <span style="font-size:13px;font-family:var(--font-mono);">${s.owner_email || s.owner_id}</span>
-          <span style="font-size:11px;color:var(--blue,#3b82f6);">View →</span>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--bg,#eceae4);border:1px solid var(--border,#d0cdc6);border-radius:6px;margin-bottom:6px;cursor:pointer;" onclick="viewSharedProjections('${s.owner_id}','${s.owner_email || s.owner_id}')">
+          <span style="font-size:13px;font-family:var(--font-mono);color:var(--text,#1a1a18);">${s.owner_email || s.owner_id}</span>
+          <span style="font-size:11px;color:var(--blue,#3b82f6);font-weight:600;">View →</span>
         </div>`).join('');
 }
 
@@ -2875,8 +2903,12 @@ function deleteScoringPreset() {
   renderSettings();
 }
 
+const ADMIN_EMAIL = 'maxwellcrowe7@gmail.com';
+function isAdmin() { return currentUser?.email === ADMIN_EMAIL; }
+
 function renderSettings() {
   const page = document.getElementById("settings-page");
+  const isAdmin = currentUser?.email === ADMIN_EMAIL;
 
   const cards = Object.entries(TEAM_LOGOS).map(([team, file]) => {
     const short = team.replace(/^.+ /, "");
@@ -2926,6 +2958,7 @@ function renderSettings() {
       <div style="display:flex;gap:10px;margin-bottom:32px;">
         <button class="add-player-btn" onclick="signOut()" style="font-size:12px;padding:8px 16px;color:var(--red,#ef4444);">Sign out</button>
       </div>
+      ${isAdmin ? `
       <div class="settings-section-title">Historical Data</div>
       <p style="font-size:11px;color:var(--text-3);margin-bottom:12px;font-family:var(--font-mono);">
         Export historical data as CSV, edit column headers, then re-import to clean up naming conventions.
@@ -2934,8 +2967,8 @@ function renderSettings() {
         <button class="add-player-btn" onclick="exportHistCSV()" style="font-size:12px;padding:8px 16px;">↓ Export historical data (CSV)</button>
         <button class="add-player-btn" onclick="importHistCSV()" style="font-size:12px;padding:8px 16px;">↑ Import historical data (CSV)</button>
         <button class="add-player-btn" onclick="clearHistData()" style="font-size:12px;padding:8px 16px;color:var(--red);border-color:var(--red);">✕ Clear historical data</button>
-        ${currentUser?.email === 'maxwellcrowe7@gmail.com' ? `<button class="add-player-btn" onclick="pushHistToSupabase()" style="font-size:12px;padding:8px 16px;color:var(--green,#22c55e);border-color:var(--green,#22c55e);">↑ Publish to cloud (admin)</button>` : ''}
-      </div>
+        <button class="add-player-btn" onclick="pushHistToSupabase()" style="font-size:12px;padding:8px 16px;color:var(--green,#22c55e);border-color:var(--green,#22c55e);">↑ Publish to cloud (admin)</button>
+      </div>` : ''}
     </div>
 
     <div class="settings-tab-content ${activeTab === 'guide' ? 'active' : ''}" id="stab-guide">
@@ -4290,9 +4323,9 @@ function renderDataToolbar() {
         <button class="view-btn ${!dataPerGame?'active':''}" onclick="setDataPerGame(false)">Raw</button>
         <button class="view-btn ${dataPerGame?'active':''}" onclick="setDataPerGame(true)">Per Game</button>
       </div>
-      <button class="data-edit-btn ${dataEditMode?'active':''}" onclick="toggleDataEditMode()">
+      ${currentUser?.email === ADMIN_EMAIL ? `<button class="data-edit-btn ${dataEditMode?'active':''}" onclick="toggleDataEditMode()">
         ${dataEditMode ? "✓ Done" : "Edit"}
-      </button>
+      </button>` : ''}
     </div>
   `;
   rebuildTeamDropdown();
