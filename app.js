@@ -264,12 +264,24 @@ function applyFullPayload(payload) {
   if (!payload.state) return false;
   state = payload.state;
   if (payload.selectedTeam !== undefined) selectedTeam = payload.selectedTeam;
-  if (payload.rankingsState)               localStorage.setItem('ff_rankings_v1',         JSON.stringify(payload.rankingsState));
+  if (payload.rankingsState) {
+    localStorage.setItem('ff_rankings_v1', JSON.stringify(payload.rankingsState));
+    rankingsState = payload.rankingsState;
+  }
   if (payload.teamStatus)                  localStorage.setItem('ff_team_status',          JSON.stringify(payload.teamStatus));
   if (payload.colorOverrides)              localStorage.setItem('ff_color_overrides',      JSON.stringify(payload.colorOverrides));
-  if (payload.draftState)                  localStorage.setItem('ff_draft_v1',             JSON.stringify(payload.draftState));
-  if (payload.scoringPresets)              localStorage.setItem('ff_scoring_presets',      JSON.stringify(payload.scoringPresets));
-  if (payload.activeScoringPreset !== undefined) localStorage.setItem('ff_active_scoring_preset', payload.activeScoringPreset);
+  if (payload.draftState) {
+    localStorage.setItem('ff_draft_v1', JSON.stringify(payload.draftState));
+    draftState = payload.draftState;
+  }
+  if (payload.scoringPresets) {
+    localStorage.setItem('ff_scoring_presets', JSON.stringify(payload.scoringPresets));
+    scoringPresets = payload.scoringPresets;
+  }
+  if (payload.activeScoringPreset !== undefined) {
+    localStorage.setItem('ff_active_scoring_preset', payload.activeScoringPreset);
+    activeScoringPreset = parseInt(payload.activeScoringPreset);
+  }
   if (payload.colDisplay)                  localStorage.setItem('ff_col_display',          JSON.stringify(payload.colDisplay));
   if (payload.teamLocks) {
     Object.entries(payload.teamLocks).forEach(([k, v]) => {
@@ -465,8 +477,24 @@ async function initAuth() {
     }
     if (currentUser) {
       showApp();
-      await loadFromSupabase();
-      bootApp();
+      bootApp(); // render from localStorage immediately
+      // Hydrate from cloud in background (only on actual sign-in, not token refresh)
+      if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
+        loadFromSupabase().then(loaded => {
+          // Skip re-render if user has already made edits (sbSaveTimer pending)
+          if (loaded && !sbSaveTimer) {
+            refreshSidebarDots();
+            buildSidebar();
+            if (selectedTeam) renderMain();
+            applyAllColorOverrides();
+            const page = localStorage.getItem('ff_last_page');
+            if (page === 'rankings') renderRankings();
+            else if (page === 'draft') renderDraftPage();
+            else if (page === 'data') renderDataPage();
+            else if (page === 'settings') renderSettings();
+          }
+        });
+      }
     } else {
       showLogin();
     }
