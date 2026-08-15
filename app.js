@@ -249,7 +249,9 @@ function buildFullPayload() {
     version: '2',
     state,
     selectedTeam,
-    rankingsState:       JSON.parse(localStorage.getItem('ff_rankings_v1')         || '{}'),
+    rankingSets:         JSON.parse(localStorage.getItem('ff_ranking_sets')         || 'null'),
+    activeRankingSetIdx: parseInt(localStorage.getItem('ff_active_ranking_set')     || '0'),
+    rankingsState:       JSON.parse(localStorage.getItem('ff_rankings_v1')          || '{}'),
     teamStatus:          JSON.parse(localStorage.getItem('ff_team_status')          || '{}'),
     colorOverrides:      JSON.parse(localStorage.getItem('ff_color_overrides')      || '{}'),
     draftState:          JSON.parse(localStorage.getItem('ff_draft_v1')             || 'null') || { leagues: [], activeLeague: 0 },
@@ -259,6 +261,7 @@ function buildFullPayload() {
     teamLocks,
     rookieTags:          JSON.parse(localStorage.getItem('ff_rookie_tags')          || '[]'),
     hiddenPlayers:       JSON.parse(localStorage.getItem('ff_hidden_players')       || '[]'),
+    kickers:             JSON.parse(localStorage.getItem('ff_kickers')              || '[]'),
   };
 }
 
@@ -266,9 +269,20 @@ function applyFullPayload(payload) {
   if (!payload.state) return false;
   state = payload.state;
   if (payload.selectedTeam !== undefined) selectedTeam = payload.selectedTeam;
+  if (payload.rankingSets) {
+    localStorage.setItem('ff_ranking_sets', JSON.stringify(payload.rankingSets));
+    rankingSets = payload.rankingSets;
+    activeRankingSetIdx = Math.max(0, Math.min(payload.activeRankingSetIdx || 0, rankingSets.length - 1));
+    localStorage.setItem('ff_active_ranking_set', activeRankingSetIdx);
+  } else if (payload.rankingsState && Object.keys(payload.rankingsState).length > 0) {
+    // Migrate old format on load
+    const positions = {};
+    ['QB','RB','WR','TE','DST','K'].forEach(pos => { positions[pos] = payload.rankingsState[pos] || { order: [], tiers: [] }; });
+    rankingSets = [{ id: 'set_0', name: 'Main', scoring_idx: 0, positions }];
+    localStorage.setItem('ff_ranking_sets', JSON.stringify(rankingSets));
+  }
   if (payload.rankingsState) {
     localStorage.setItem('ff_rankings_v1', JSON.stringify(payload.rankingsState));
-    rankingsState = payload.rankingsState;
   }
   if (payload.teamStatus)                  localStorage.setItem('ff_team_status',          JSON.stringify(payload.teamStatus));
   if (payload.colorOverrides)              localStorage.setItem('ff_color_overrides',      JSON.stringify(payload.colorOverrides));
@@ -297,6 +311,10 @@ function applyFullPayload(payload) {
   if (payload.hiddenPlayers) {
     localStorage.setItem('ff_hidden_players', JSON.stringify(payload.hiddenPlayers));
     hiddenPlayers = new Set(payload.hiddenPlayers);
+  }
+  if (payload.kickers) {
+    localStorage.setItem('ff_kickers', JSON.stringify(payload.kickers));
+    kickers = payload.kickers;
   }
   return true;
 }
@@ -593,9 +611,19 @@ function applySharedPayload(payload) {
   if (!payload.state) return false;
   state = payload.state;
   if (payload.selectedTeam !== undefined) selectedTeam = payload.selectedTeam;
+  if (payload.rankingSets) {
+    localStorage.setItem('ff_ranking_sets', JSON.stringify(payload.rankingSets));
+    rankingSets = payload.rankingSets;
+    activeRankingSetIdx = Math.max(0, Math.min(payload.activeRankingSetIdx || 0, rankingSets.length - 1));
+    localStorage.setItem('ff_active_ranking_set', activeRankingSetIdx);
+  } else if (payload.rankingsState && Object.keys(payload.rankingsState).length > 0) {
+    const positions = {};
+    ['QB','RB','WR','TE','DST','K'].forEach(pos => { positions[pos] = payload.rankingsState[pos] || { order: [], tiers: [] }; });
+    rankingSets = [{ id: 'set_0', name: 'Main', scoring_idx: 0, positions }];
+    localStorage.setItem('ff_ranking_sets', JSON.stringify(rankingSets));
+  }
   if (payload.rankingsState) {
     localStorage.setItem('ff_rankings_v1', JSON.stringify(payload.rankingsState));
-    rankingsState = payload.rankingsState;
   }
   if (payload.teamStatus)     localStorage.setItem('ff_team_status',     JSON.stringify(payload.teamStatus));
   if (payload.colorOverrides) localStorage.setItem('ff_color_overrides', JSON.stringify(payload.colorOverrides));
@@ -669,17 +697,18 @@ function unhidePlayer(playerId) {
   hiddenPlayers.delete(playerId);
   // Move to bottom of current rankings order so they don't pop into a random spot
   const pos = rankPos;
-  if (!rankingsState[pos]) rankingsState[pos] = { order: [], tiers: [] };
-  const order = rankingsState[pos].order || [];
+  const set = getActiveRankingSet();
+  if (!set.positions[pos]) set.positions[pos] = { order: [], tiers: [] };
+  const order = set.positions[pos].order || [];
   if (!order.includes(playerId)) order.push(playerId);
   else {
     const idx = order.indexOf(playerId);
     order.splice(idx, 1);
     order.push(playerId);
   }
-  rankingsState[pos].order = order;
+  set.positions[pos].order = order;
   saveHiddenPlayers();
-  saveRankingsState();
+  saveRankingSets();
   renderRankings();
 }
 let showHidden = false;
@@ -695,6 +724,25 @@ function toggleRookieTag(playerId) {
   else rookieTags.add(playerId);
   saveRookieTags();
   renderMain();
+}
+
+// ─── Kickers (for K rankings) ───
+let kickers = JSON.parse(localStorage.getItem('ff_kickers') || '[]');
+function saveKickers() { localStorage.setItem('ff_kickers', JSON.stringify(kickers)); sbSave(); }
+function addKicker() {
+  const nameEl = document.getElementById('new-kicker-name');
+  const teamEl = document.getElementById('new-kicker-team');
+  const name = nameEl ? nameEl.value.trim() : '';
+  const team = teamEl ? teamEl.value : '';
+  if (!name) return;
+  kickers.push({ id: 'k_' + Date.now(), name, team });
+  saveKickers();
+  renderSettings();
+}
+function deleteKicker(id) {
+  kickers = kickers.filter(k => k.id !== id);
+  saveKickers();
+  renderSettings();
 }
 
 // ─── Undo history ───
@@ -2687,11 +2735,9 @@ function switchPage(page) {
   document.getElementById("main").style.display = page === "projections" ? "" : "none";
   document.getElementById("rankings-page").style.display = page === "rankings" ? "" : "none";
   if (page === "rankings") {
-    const qbToggle = document.getElementById('qb-rec-toggle');
-    if (qbToggle) qbToggle.style.display = rankPos === 'QB' ? '' : 'none';
-    const skillToggle = document.getElementById('skill-pass-toggle');
-    if (skillToggle) skillToggle.style.display = ['RB','WR','TE'].includes(rankPos) ? '' : 'none';
+    _updateRankToolbarToggles();
     renderScoringPresetSelector();
+    renderRankingSetsTabs();
   }
   document.getElementById("data-page").style.display = page === "data" ? "" : "none";
   document.getElementById("draft-page").style.display = page === "draft" ? "" : "none";
@@ -2728,13 +2774,16 @@ function exportData() {
     version: "2",
     exportedAt: new Date().toISOString(),
     state,
-    rankingsState:   JSON.parse(localStorage.getItem("ff_rankings_v1")          || "{}"),
+    rankingSets:     JSON.parse(localStorage.getItem("ff_ranking_sets")          || "null"),
+    activeRankingSetIdx: parseInt(localStorage.getItem("ff_active_ranking_set")  || "0"),
+    rankingsState:   JSON.parse(localStorage.getItem("ff_rankings_v1")           || "{}"),
     teamStatus:      JSON.parse(localStorage.getItem("ff_team_status")           || "{}"),
     colorOverrides:  JSON.parse(localStorage.getItem("ff_color_overrides")       || "{}"),
     draftState:      JSON.parse(localStorage.getItem(DRAFT_STORAGE_KEY)          || "null") || { leagues: [], activeLeague: 0 },
     scoringPresets:  JSON.parse(localStorage.getItem("ff_scoring_presets")       || "null"),
     activeScoringPreset: localStorage.getItem("ff_active_scoring_preset") || "0",
     colDisplay:      JSON.parse(localStorage.getItem("ff_col_display")           || "{}"),
+    kickers:         JSON.parse(localStorage.getItem("ff_kickers")               || "[]"),
     teamLocks,
   };
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
@@ -2760,13 +2809,15 @@ function importData() {
         if (!payload.state) { alert("Invalid file — no projection data found."); return; }
         if (!confirm("This will replace your current projections, rankings, draft board, and settings. Are you sure?")) return;
         state = payload.state;
-        if (payload.rankingsState)   localStorage.setItem("ff_rankings_v1",          JSON.stringify(payload.rankingsState));
+        if (payload.rankingSets)     { localStorage.setItem("ff_ranking_sets",         JSON.stringify(payload.rankingSets)); localStorage.setItem("ff_active_ranking_set", payload.activeRankingSetIdx || 0); }
+        if (payload.rankingsState)   localStorage.setItem("ff_rankings_v1",           JSON.stringify(payload.rankingsState));
         if (payload.teamStatus)      localStorage.setItem("ff_team_status",           JSON.stringify(payload.teamStatus));
         if (payload.colorOverrides)  localStorage.setItem("ff_color_overrides",       JSON.stringify(payload.colorOverrides));
         if (payload.draftState)      localStorage.setItem(DRAFT_STORAGE_KEY,          JSON.stringify(payload.draftState));
         if (payload.scoringPresets)  localStorage.setItem("ff_scoring_presets",       JSON.stringify(payload.scoringPresets));
         if (payload.activeScoringPreset !== undefined) localStorage.setItem("ff_active_scoring_preset", payload.activeScoringPreset);
         if (payload.colDisplay)      localStorage.setItem("ff_col_display",           JSON.stringify(payload.colDisplay));
+        if (payload.kickers)         localStorage.setItem("ff_kickers",               JSON.stringify(payload.kickers));
         // Restore per-team locks
         if (payload.teamLocks) {
           Object.entries(payload.teamLocks).forEach(([k, v]) => {
@@ -2779,7 +2830,9 @@ function importData() {
         refreshSidebarDots();
         loadStatMap();
         applyAllColorOverrides();
-        rankingsState = getRankingsState();
+        rankingSets = loadRankingSets();
+        activeRankingSetIdx = Math.max(0, parseInt(localStorage.getItem('ff_active_ranking_set') || '0'));
+        kickers = JSON.parse(localStorage.getItem('ff_kickers') || '[]');
         draftState = loadDraftState();
         scoringPresets = JSON.parse(localStorage.getItem('ff_scoring_presets') || 'null') || DEFAULT_SCORING_PRESETS.map(p => ({...p}));
         activeScoringPreset = parseInt(localStorage.getItem('ff_active_scoring_preset') || '0');
@@ -3060,10 +3113,14 @@ function renderSettings() {
 
   const activeTab = page.dataset.activeTab || 'scoring';
 
+  const allNFLTeams = getAllTeams();
+  const teamOpts = allNFLTeams.map(t => `<option value="${t}">${t}</option>`).join('');
+
   page.innerHTML = `
     <h1>Settings</h1>
     <div class="settings-tabs">
       <button class="settings-tab ${activeTab === 'scoring' ? 'active' : ''}" onclick="switchSettingsTab('scoring')">Scoring</button>
+      <button class="settings-tab ${activeTab === 'kd' ? 'active' : ''}" onclick="switchSettingsTab('kd')">K &amp; D/ST</button>
       <button class="settings-tab ${activeTab === 'data' ? 'active' : ''}" onclick="switchSettingsTab('data')">Data</button>
       <button class="settings-tab ${activeTab === 'display' ? 'active' : ''}" onclick="switchSettingsTab('display')">Display</button>
       <button class="settings-tab ${activeTab === 'guide' ? 'active' : ''}" onclick="switchSettingsTab('guide')">Guide</button>
@@ -3072,6 +3129,46 @@ function renderSettings() {
     <div class="settings-tab-content ${activeTab === 'scoring' ? 'active' : ''}" id="stab-scoring">
       <div class="settings-section-title">Scoring Settings</div>
       ${buildScoringSettings()}
+    </div>
+
+    <div class="settings-tab-content ${activeTab === 'kd' ? 'active' : ''}" id="stab-kd">
+      <div class="settings-section-title">Defenses (D/ST)</div>
+      <p style="font-size:11px;color:var(--text-3);margin-bottom:12px;font-family:var(--font-mono);">
+        All 32 NFL teams are available as draftable defenses. No management needed.
+      </p>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:32px;">
+        ${allNFLTeams.map(t => {
+          const short = t.replace(/^.+ /, '');
+          const clr = (TEAM_COLORS[t] || {}).border || '#888';
+          return `<span style="background:${clr}22;color:${clr};border:1px solid ${clr}55;border-radius:4px;padding:3px 8px;font-size:10px;font-weight:700;font-family:var(--font-mono);">${short}</span>`;
+        }).join('')}
+      </div>
+
+      <div class="settings-section-title">Kickers</div>
+      <p style="font-size:11px;color:var(--text-3);margin-bottom:12px;font-family:var(--font-mono);">
+        Add kickers you want to rank. They'll appear in the K tab on the Rankings page.
+      </p>
+      ${kickers.length > 0 ? `<div style="display:flex;flex-direction:column;gap:4px;margin-bottom:16px;">` +
+        kickers.map(k => {
+          const clr = (TEAM_COLORS[k.team] || {}).border || '#888';
+          const short = (k.team || '').replace(/^.+ /, '') || '—';
+          return `<div style="display:flex;align-items:center;gap:10px;padding:6px 10px;background:var(--bg-3);border:1px solid var(--border);border-radius:4px;">
+            <span style="flex:1;font-size:12px;color:var(--text);">${k.name}</span>
+            <span style="background:${clr}22;color:${clr};border:1px solid ${clr}55;border-radius:3px;padding:1px 6px;font-size:9px;font-weight:700;">${short}</span>
+            <button class="add-player-btn" onclick="deleteKicker('${k.id}')" style="font-size:10px;padding:2px 8px;color:var(--red,#ef4444);border-color:var(--red,#ef4444);">Remove</button>
+          </div>`;
+        }).join('') + `</div>` : `<p style="font-size:11px;color:var(--text-3);margin-bottom:12px;font-family:var(--font-mono);">No kickers added yet.</p>`}
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:24px;flex-wrap:wrap;">
+        <input id="new-kicker-name" type="text" placeholder="Player name" spellcheck="false"
+          style="background:var(--bg-3);border:1px solid var(--border-2);border-radius:4px;padding:6px 10px;font-size:12px;color:var(--text);outline:none;width:180px;"
+          onkeydown="if(event.key==='Enter')addKicker()">
+        <select id="new-kicker-team"
+          style="background:var(--bg-3);border:1px solid var(--border-2);border-radius:4px;padding:6px 10px;font-size:12px;color:var(--text);outline:none;cursor:pointer;">
+          <option value="">— Team —</option>
+          ${teamOpts}
+        </select>
+        <button class="add-player-btn" onclick="addKicker()" style="font-size:12px;padding:6px 14px;">+ Add kicker</button>
+      </div>
     </div>
 
     <div class="settings-tab-content ${activeTab === 'data' ? 'active' : ''}" id="stab-data">
@@ -3186,8 +3283,9 @@ function switchSettingsTab(tab) {
 function renderScoringPresetSelector() {
   const el = document.getElementById('scoring-preset-selector');
   if (!el) return;
+  const current = getActiveRankingSet().scoring_idx || 0;
   const opts = scoringPresets.map((p, i) =>
-    `<option value="${i}" ${i === activeScoringPreset ? 'selected' : ''}>${p.name}</option>`
+    `<option value="${i}" ${i === current ? 'selected' : ''}>${p.name}</option>`
   ).join("");
   el.innerHTML = `<select onchange="setActiveScoringPresetRankings(parseInt(this.value))"
     style="background:var(--bg-3);border:1px solid var(--border-2);border-radius:4px;
@@ -3197,8 +3295,10 @@ function renderScoringPresetSelector() {
 }
 
 function setActiveScoringPresetRankings(i) {
-  activeScoringPreset = i;
-  saveScoringPresets();
+  // Updates the active ranking set's scoring — does not touch global activeScoringPreset
+  const set = getActiveRankingSet();
+  set.scoring_idx = i;
+  saveRankingSets();
   renderScoringPresetSelector();
   renderRankings();
 }
@@ -3217,28 +3317,37 @@ function setQbRecMode(val) {
   renderRankings();
 }
 
+function _updateRankToolbarToggles() {
+  const isDST = rankPos === 'DST', isK = rankPos === 'K';
+  const inStats = rankView === 'stats' && !isDST && !isK;
+  const qbToggle = document.getElementById('qb-rec-toggle');
+  if (qbToggle) qbToggle.style.display = (rankPos === 'QB' && inStats) ? '' : 'none';
+  const skillToggle = document.getElementById('skill-pass-toggle');
+  if (skillToggle) skillToggle.style.display = (['RB','WR','TE'].includes(rankPos) && inStats) ? '' : 'none';
+  const statsBtn = document.getElementById('vbtn-stats');
+  if (statsBtn) { statsBtn.disabled = isDST || isK; statsBtn.style.opacity = (isDST || isK) ? '0.4' : ''; }
+}
+
 function setRankPos(pos) {
   rankPos = pos;
   qbRecMode = false;
   sortCol = null;
-  ["QB","RB","WR","TE"].forEach(p => {
+  ["QB","RB","WR","TE","DST","K"].forEach(p => {
     const btn = document.getElementById(`rtab-${p}`);
-    btn.className = `pos-tab${pos === p ? ` active active-${p.toLowerCase()}` : ""}`;
+    if (btn) btn.className = `pos-tab${pos === p ? ` active active-${p.toLowerCase()}` : ""}`;
   });
-  const qbToggle = document.getElementById('qb-rec-toggle');
-  if (qbToggle) qbToggle.style.display = pos === 'QB' ? '' : 'none';
   const passBtn = document.getElementById('qbrec-pass');
   const recBtn = document.getElementById('qbrec-rec');
   if (passBtn) passBtn.classList.add('active');
   if (recBtn) recBtn.classList.remove('active');
-  const skillToggle = document.getElementById('skill-pass-toggle');
-  if (skillToggle) skillToggle.style.display = ['RB','WR','TE'].includes(pos) ? '' : 'none';
   const skillRushRecBtn = document.getElementById('skill-rushrec');
   const skillPassBtn = document.getElementById('skill-pass');
   if (skillRushRecBtn) skillRushRecBtn.classList.add('active');
   if (skillPassBtn) skillPassBtn.classList.remove('active');
   skillPassMode = false;
-  saveRankingsState();
+  // DST/K don't have a stats view — force rankings
+  if (pos === 'DST' || pos === 'K') rankView = 'rankings';
+  _updateRankToolbarToggles();
   renderRankings();
 }
 
@@ -3246,15 +3355,23 @@ function setRankView(view) {
   rankView = view;
   document.getElementById("vbtn-stats").classList.toggle("active", view === "stats");
   document.getElementById("vbtn-rankings").classList.toggle("active", view === "rankings");
+  _updateRankToolbarToggles();
   renderRankings();
 }
 
 // ─── Collect all players for a position across all teams ───
 function getPlayersForPos(pos) {
+  if (pos === 'DST') {
+    return getAllTeams().map(teamName => {
+      const short = teamName.replace(/^.+ /, '');
+      return { id: 'dst_' + short.toLowerCase(), name: teamName, team: teamName, pos: 'DST', stats: {} };
+    });
+  }
+  if (pos === 'K') {
+    return kickers.map(k => ({ ...k, pos: 'K', stats: {} }));
+  }
   const players = [];
-  for (const teamName of Object.keys(TEAMS).flatMap(conf =>
-    Object.values(TEAMS[conf]).flat()
-  )) {
+  for (const teamName of getAllTeams()) {
     const k = tk(teamName);
     if (!state[k]) continue;
     state[k].players.forEach(p => {
@@ -3373,61 +3490,196 @@ function enrichPlayer(p) {
   return { ...p, stats };
 }
 
-// ─── Rankings state (order + tiers per position) ───
-function getRankingsState() {
-  try { return JSON.parse(localStorage.getItem("ff_rankings_v1") || "{}"); } catch(e) { return {}; }
+// ─── Named ranking sets ───
+function loadRankingSets() {
+  try {
+    const raw = localStorage.getItem('ff_ranking_sets');
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  // Migrate from old ff_rankings_v1 format
+  const positions = {};
+  try {
+    const old = JSON.parse(localStorage.getItem('ff_rankings_v1') || '{}');
+    ['QB','RB','WR','TE','DST','K'].forEach(pos => { positions[pos] = old[pos] || { order: [], tiers: [] }; });
+  } catch(e) {
+    ['QB','RB','WR','TE','DST','K'].forEach(pos => { positions[pos] = { order: [], tiers: [] }; });
+  }
+  return [{ id: 'set_0', name: 'Main', scoring_idx: 0, positions }];
 }
-function saveRankingsState() {
-  try { localStorage.setItem("ff_rankings_v1", JSON.stringify(rankingsState)); } catch(e) {}
+function saveRankingSets() {
+  try { localStorage.setItem('ff_ranking_sets', JSON.stringify(rankingSets)); } catch(e) {}
   sbSave();
 }
-let rankingsState = getRankingsState();
-// rankingsState[pos] = { order: [id, id, ...], tiers: [afterIndex, afterIndex, ...] }
+// Legacy alias so old call sites that were updated still compile
+function saveRankingsState() { saveRankingSets(); }
+function getRankingsState() { return {}; } // kept for import compat
+
+let rankingSets = loadRankingSets();
+let rankingsState = null; // legacy alias; never used directly after migration
+let activeRankingSetIdx = Math.max(0, parseInt(localStorage.getItem('ff_active_ranking_set') || '0'));
+
+function getActiveRankingSet() {
+  return rankingSets[Math.min(activeRankingSetIdx, rankingSets.length - 1)] || rankingSets[0];
+}
+
+function setActiveRankingSetIdx(i) {
+  activeRankingSetIdx = i;
+  localStorage.setItem('ff_active_ranking_set', i);
+  renderRankingSetsTabs();
+  renderScoringPresetSelector();
+  renderRankings();
+}
+
+function createRankingSet(name) {
+  const positions = {};
+  ['QB','RB','WR','TE','DST','K'].forEach(pos => { positions[pos] = { order: [], tiers: [] }; });
+  rankingSets.push({ id: 'set_' + Date.now(), name: name || 'Set ' + (rankingSets.length + 1), scoring_idx: getActiveRankingSet().scoring_idx, positions });
+  activeRankingSetIdx = rankingSets.length - 1;
+  localStorage.setItem('ff_active_ranking_set', activeRankingSetIdx);
+  saveRankingSets();
+  renderRankingSetsTabs();
+  renderScoringPresetSelector();
+  renderRankings();
+}
+
+function copyRankingSetInto(destIdx, srcIdx) {
+  const src = rankingSets[srcIdx];
+  const dest = rankingSets[destIdx];
+  if (!src || !dest) return;
+  dest.positions = JSON.parse(JSON.stringify(src.positions));
+  dest.scoring_idx = src.scoring_idx;
+  saveRankingSets();
+  if (destIdx === activeRankingSetIdx) { renderScoringPresetSelector(); renderRankings(); }
+}
+
+function deleteRankingSet(idx) {
+  if (rankingSets.length <= 1) return;
+  rankingSets.splice(idx, 1);
+  activeRankingSetIdx = Math.max(0, Math.min(activeRankingSetIdx, rankingSets.length - 1));
+  localStorage.setItem('ff_active_ranking_set', activeRankingSetIdx);
+  saveRankingSets();
+  renderRankingSetsTabs();
+  renderScoringPresetSelector();
+  renderRankings();
+}
+
+function renameRankingSet(idx, name) {
+  if (!rankingSets[idx] || !name) return;
+  rankingSets[idx].name = name;
+  saveRankingSets();
+  renderRankingSetsTabs();
+}
+
+function renderRankingSetsTabs() {
+  const el = document.getElementById('ranking-sets-tabs');
+  if (!el) return;
+  el.innerHTML = rankingSets.map((set, i) =>
+    `<button class="ranking-set-tab${i === activeRankingSetIdx ? ' active' : ''}"
+      onclick="setActiveRankingSetIdx(${i})"
+      oncontextmenu="showRankingSetCtxMenu(event,${i});return false;">${set.name}</button>`
+  ).join('') +
+  `<button class="ranking-set-tab ranking-set-add" onclick="promptNewRankingSet()" title="New ranking set">+</button>`;
+}
+
+function promptNewRankingSet() {
+  const name = prompt('Name for new ranking set:', 'Set ' + (rankingSets.length + 1));
+  if (name !== null && name.trim()) createRankingSet(name.trim());
+}
+
+function showRankingSetCtxMenu(e, idx) {
+  e.preventDefault();
+  document.querySelectorAll('.rank-ctx-menu').forEach(m => m.remove());
+  const menu = document.createElement('div');
+  menu.className = 'rank-ctx-menu trade-ctx-menu';
+
+  const renameItem = document.createElement('div');
+  renameItem.className = 'trade-ctx-item';
+  renameItem.textContent = 'Rename';
+  renameItem.onclick = () => { menu.remove(); const n = prompt('Rename:', rankingSets[idx]?.name || ''); if (n !== null && n.trim()) renameRankingSet(idx, n.trim()); };
+  menu.appendChild(renameItem);
+
+  rankingSets.forEach((set, i) => {
+    if (i === idx) return;
+    const copyItem = document.createElement('div');
+    copyItem.className = 'trade-ctx-item';
+    copyItem.textContent = 'Copy from "' + set.name + '"';
+    copyItem.onclick = () => { menu.remove(); copyRankingSetInto(idx, i); };
+    menu.appendChild(copyItem);
+  });
+
+  if (rankingSets.length > 1) {
+    const sep = document.createElement('div');
+    sep.style.cssText = 'border-top:1px solid var(--border-2);margin:4px 0;';
+    menu.appendChild(sep);
+    const delItem = document.createElement('div');
+    delItem.className = 'trade-ctx-item';
+    delItem.style.color = 'var(--red,#ef4444)';
+    delItem.textContent = 'Delete set';
+    delItem.onclick = () => { menu.remove(); deleteRankingSet(idx); };
+    menu.appendChild(delItem);
+  }
+
+  document.body.appendChild(menu);
+  const mw = 180;
+  menu.style.left = (e.clientX + mw > window.innerWidth ? e.clientX - mw : e.clientX) + 'px';
+  menu.style.top = e.clientY + 'px';
+  const close = ev => { if (!menu.contains(ev.target)) { menu.remove(); document.removeEventListener('mousedown', close); } };
+  setTimeout(() => document.addEventListener('mousedown', close), 0);
+}
 
 function defaultRankOrder(players) {
   return [...players].sort((a, b) => parseFloat(calcFpts(b).fpts || 0) - parseFloat(calcFpts(a).fpts || 0));
 }
 
 function getRankOrder(pos, players) {
-  const rs = rankingsState[pos];
+  const rs = (getActiveRankingSet().positions || {})[pos];
   if (!rs || !rs.order || rs.order.length === 0) return defaultRankOrder(players);
   const idMap = {};
   players.forEach(p => { idMap[p.id] = p; });
   const ordered = rs.order.map(id => idMap[id]).filter(Boolean);
   const ranked = new Set(rs.order);
-  // New players not yet in the ranked list go to the bottom
   players.forEach(p => { if (!ranked.has(p.id)) ordered.push(p); });
   return ordered;
 }
 
 function resetRankings(pos) {
-  if (!rankingsState[pos]) rankingsState[pos] = {};
-  rankingsState[pos].order = [];
-  rankingsState[pos].tiers = [];
-  saveRankingsState();
+  const set = getActiveRankingSet();
+  if (!set.positions[pos]) set.positions[pos] = {};
+  set.positions[pos].order = [];
+  set.positions[pos].tiers = [];
+  saveRankingSets();
   renderRankings();
 }
 
 function getTiers(pos) {
-  return (rankingsState[pos] && rankingsState[pos].tiers) ? [...rankingsState[pos].tiers] : [];
+  const rs = (getActiveRankingSet().positions || {})[pos];
+  return (rs && rs.tiers) ? [...rs.tiers] : [];
 }
 
 function setOrder(pos, ids) {
-  if (!rankingsState[pos]) rankingsState[pos] = { order: [], tiers: [] };
-  rankingsState[pos].order = ids;
-  saveRankingsState();
+  const set = getActiveRankingSet();
+  if (!set.positions[pos]) set.positions[pos] = { order: [], tiers: [] };
+  set.positions[pos].order = ids;
+  saveRankingSets();
 }
 
 function setTiers(pos, tiers) {
-  if (!rankingsState[pos]) rankingsState[pos] = { order: [], tiers: [] };
-  rankingsState[pos].tiers = tiers;
-  saveRankingsState();
+  const set = getActiveRankingSet();
+  if (!set.positions[pos]) set.positions[pos] = { order: [], tiers: [] };
+  set.positions[pos].tiers = tiers;
+  saveRankingSets();
 }
 
 // ─── Render rankings page ───
+let _rankingsScoringCtx = null; // overrides getActiveScoring() during rankings renders
+
 function renderRankings() {
+  renderRankingSetsTabs();
   const content = document.getElementById("rankings-content");
-  const players = getPlayersForPos(rankPos).map(enrichPlayer);
+  const isDST = rankPos === 'DST';
+  const isK = rankPos === 'K';
+  const rawPlayers = getPlayersForPos(rankPos);
+  const players = (isDST || isK) ? rawPlayers : rawPlayers.map(enrichPlayer);
 
   // Show/hide reset button based on view mode
   let resetBtn = document.getElementById('rankings-reset-btn');
@@ -3448,12 +3700,16 @@ function renderRankings() {
   }
 
   if (players.length === 0) {
-    content.innerHTML = `<div class="no-players">No ${rankPos}s found — add players in the Projections page first.</div>`;
+    const label = isDST ? 'defenses' : isK ? 'kickers — add some in Settings → K & D/ST' : `${rankPos}s — add players in the Projections page first`;
+    content.innerHTML = `<div class="no-players">No ${label}.</div>`;
     return;
   }
 
-  if (rankView === "stats") renderStatsView(content, players);
+  // Apply per-set scoring context for Fpts calculations
+  _rankingsScoringCtx = getActiveRankingSet().scoring_idx;
+  if (rankView === "stats" && !isDST && !isK) renderStatsView(content, players);
   else renderRankingsView(content, players);
+  _rankingsScoringCtx = null;
 }
 
 // ─── Stats view ───
@@ -3529,12 +3785,14 @@ function renderRankingsView(content, players) {
 
   const ordered = getRankOrder(rankPos, visiblePlayers);
   const tierIds = getTiers(rankPos); // player IDs that start a new tier
+  const isDST = rankPos === 'DST', isK = rankPos === 'K';
   const isSkill = ["RB","WR","TE"].includes(rankPos);
-  const cols = (rankPos === "QB" && qbRecMode) ? QB_REC_STAT_COLS
+  const cols = (isDST || isK) ? [] :
+    (rankPos === "QB" && qbRecMode) ? QB_REC_STAT_COLS
     : (isSkill && skillPassMode) ? SKILL_PASS_STAT_COLS
     : POS_STAT_COLS[rankPos];
 
-  const headerCols = [...cols, { key: "fpts", label: "Fpts", grp: "fpts" }, { key: "fptsPerGame", label: "Fpts/G", grp: "fpts" }];
+  const headerCols = isDST || isK ? [] : [...cols, { key: "fpts", label: "Fpts", grp: "fpts" }, { key: "fptsPerGame", label: "Fpts/G", grp: "fpts" }];
   const rankGrpColor = { pass: "var(--blue)", recv: "var(--amber)", rush: "var(--accent)", meta: "var(--text-3)", fpts: "var(--accent)" };
   const headerCells = headerCols.map(c => {
     const color = rankGrpColor[c.grp || "meta"] || "var(--text-3)";
@@ -3568,9 +3826,9 @@ function renderRankingsView(content, players) {
       </div>`;
     }
 
-    const { fpts, fptsPerGame } = calcFpts(p);
+    const { fpts, fptsPerGame } = (isDST || isK) ? { fpts: '', fptsPerGame: '' } : calcFpts(p);
     const statsWithFpts = { ...p.stats, fpts, fptsPerGame };
-    const allStatCols = [...cols, { key: "fpts", label: "Fpts" }, { key: "fptsPerGame", label: "Fpts/G" }];
+    const allStatCols = isDST || isK ? [] : [...cols, { key: "fpts", label: "Fpts" }, { key: "fptsPerGame", label: "Fpts/G" }];
     const statCells = allStatCols.map(c => {
       const v = statsWithFpts[c.key];
       const isFpts = c.key === "fpts" || c.key === "fptsPerGame";
@@ -3585,9 +3843,12 @@ function renderRankingsView(content, players) {
       return `<div class="rank-stat"><div class="rank-stat-val" style="${muted}${accent}">${disp}</div></div>`;
     }).join("");
 
-    const short = p.team.replace(/^.+ /, "");
-    const teamClr = (TEAM_COLORS[p.team] || {}).border || '#888';
-    const rookieDot = rookieTags.has(p.id) ? `<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#9333ea;margin-left:4px;flex-shrink:0;vertical-align:middle;"></span>` : '';
+    const teamName = isDST ? p.name : p.team;
+    const short = teamName.replace(/^.+ /, "");
+    const teamClr = (TEAM_COLORS[teamName] || {}).border || '#888';
+    const rookieDot = (!isDST && !isK && rookieTags.has(p.id)) ? `<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#9333ea;margin-left:4px;flex-shrink:0;vertical-align:middle;"></span>` : '';
+    const displayName = isDST ? short + ' D/ST' : p.name;
+    const teamBadge = isDST ? '' : `<span class="rank-team" style="background:${teamClr}22;color:${teamClr};border:1px solid ${teamClr}55;border-radius:3px;padding:1px 5px;font-size:9px;font-weight:700;letter-spacing:0.04em;white-space:nowrap;">${short}</span>`;
     html += `<div class="rank-row${isTierLeader ? ' tier-leader' : ''}" data-player-idx="${i}" data-player-id="${p.id}"
       draggable="true"
       ondragstart="onPlayerDragStart(event,${i})"
@@ -3597,8 +3858,13 @@ function renderRankingsView(content, players) {
       ondragend="onDragEnd(event)"
       oncontextmenu="showRankCtxMenu(event,'${p.id}')">
       <span class="rank-num">${i + 1}</span>
-      <div style="flex:0 0 12%;min-width:0;overflow:hidden;"><div class="rank-name">${p.name}${rookieDot}</div></div>
-      <span class="rank-team" style="background:${teamClr}22;color:${teamClr};border:1px solid ${teamClr}55;border-radius:3px;padding:1px 5px;font-size:9px;font-weight:700;letter-spacing:0.04em;white-space:nowrap;">${short}</span>
+      <div style="flex:0 0 ${isDST || isK ? '20%' : '12%'};min-width:0;overflow:hidden;">
+        <div class="rank-name" style="display:flex;align-items:center;gap:4px;">
+          ${isDST ? `<span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${teamClr};flex-shrink:0;"></span>` : ''}
+          ${displayName}${rookieDot}
+        </div>
+      </div>
+      ${teamBadge}
       <div class="rank-stats">${statCells}</div>
     </div>`;
   });
@@ -4269,7 +4535,10 @@ const DEFAULT_SCORING_PRESETS = [
 let scoringPresets = JSON.parse(localStorage.getItem('ff_scoring_presets') || 'null') || DEFAULT_SCORING_PRESETS.map(p => ({...p}));
 let activeScoringPreset = parseInt(localStorage.getItem('ff_active_scoring_preset') || '0');
 
-function getActiveScoring() { return scoringPresets[activeScoringPreset] || scoringPresets[0]; }
+function getActiveScoring() {
+  const idx = _rankingsScoringCtx !== null ? _rankingsScoringCtx : activeScoringPreset;
+  return scoringPresets[idx] || scoringPresets[0];
+}
 
 function calcFpts(p) {
   const s = p.stats;

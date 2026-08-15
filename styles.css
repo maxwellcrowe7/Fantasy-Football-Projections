@@ -1310,6 +1310,8 @@
   .pos-tab.active-rb  { background: #3a9a5c; border-color: #3a9a5c; color: #fff; }
   .pos-tab.active-wr  { background: #4a90d9; border-color: #4a90d9; color: #fff; }
   .pos-tab.active-te  { background: #c9a800; border-color: #c9a800; color: #fff; }
+  .pos-tab.active-dst { background: #7c3aed; border-color: #7c3aed; color: #fff; }
+  .pos-tab.active-k   { background: #0891b2; border-color: #0891b2; color: #fff; }
 
   .view-toggle {
     display: flex;
@@ -1669,3 +1671,10 @@ body.viewing-mode .ts-lock-icon,
 body.viewing-mode .ts-spinner,
 body.viewing-mode .add-player-btn,
 body.viewing-mode .add-player-widget { pointer-events: none; opacity: 0.4; }
+
+  /* ─── Ranking sets tabs ─── */
+  .ranking-set-tab { font-family: var(--font-mono); font-size: 10px; padding: 3px 9px; border-radius: 3px; border: 1px solid var(--border-2); background: none; color: var(--text-3); cursor: pointer; white-space: nowrap; max-width: 100px; overflow: hidden; text-overflow: ellipsis; transition: all 0.1s; }
+  .ranking-set-tab:hover { border-color: var(--border); color: var(--text-2); }
+  .ranking-set-tab.active { border-color: var(--accent); color: var(--accent); background: var(--accent-bg, color-mix(in srgb, var(--accent) 10%, transparent)); }
+  .ranking-set-tab.ranking-set-add { border-style: dashed; color: var(--text-3); padding: 3px 8px; }
+  .ranking-set-tab.ranking-set-add:hover { color: var(--accent); border-color: var(--accent); }

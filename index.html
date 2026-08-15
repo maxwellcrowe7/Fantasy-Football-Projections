@@ -159,6 +159,8 @@
           <button class="pos-tab" id="rtab-RB" onclick="setRankPos('RB')">RB</button>
           <button class="pos-tab" id="rtab-WR" onclick="setRankPos('WR')">WR</button>
           <button class="pos-tab" id="rtab-TE" onclick="setRankPos('TE')">TE</button>
+          <button class="pos-tab" id="rtab-DST" onclick="setRankPos('DST')">D/ST</button>
+          <button class="pos-tab" id="rtab-K" onclick="setRankPos('K')">K</button>
         </div>
         <div id="qb-rec-toggle" style="display:none;">
           <div class="view-toggle">
@@ -172,7 +174,10 @@
             <button class="view-btn" id="skill-pass" onclick="setSkillPassMode(true)">Pass</button>
           </div>
         </div>
-        <div style="margin-left:auto;" id="scoring-preset-selector"></div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
+          <div id="ranking-sets-tabs" style="display:flex;align-items:center;gap:3px;"></div>
+          <div id="scoring-preset-selector"></div>
+        </div>
       </div>
       <div class="rankings-content" id="rankings-content"></div>
     </div>
