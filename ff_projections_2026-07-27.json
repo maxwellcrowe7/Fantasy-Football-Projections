@@ -1,6 +1,6 @@
 {
   "version": "2",
-  "exportedAt": "2026-06-27T04:53:04.650Z",
+  "exportedAt": "2026-07-27T00:11:36.453Z",
   "state": {
     "Buffalo_Bills": {
       "teamStats": {
@@ -100,7 +100,7 @@
             "games": 16,
             "rushAtt": 278,
             "rushYds": 1318,
-            "rushTD": 11,
+            "rushTD": 10,
             "targets": 44,
             "rec": 34,
             "recYds": 288,
@@ -277,7 +277,7 @@
             "rushTD": 0,
             "games": 14,
             "targets": 70,
-            "recTD": 4,
+            "recTD": 3,
             "rec": 52,
             "recYds": 651
           },
@@ -336,19 +336,72 @@
       "staging": []
     },
     "Miami_Dolphins": {
-      "teamStats": {},
+      "teamStats": {
+        "totalPlays": 1000,
+        "_totalPlaysConflict": false,
+        "passRate": 51,
+        "rushRate": "49.0",
+        "passPlays": 510,
+        "rushPlays": 490,
+        "sacks": 35,
+        "passAtt": 475,
+        "sackYds": 249,
+        "yardsPerSack": 7.1,
+        "deadPassPlays": 26,
+        "targets": 449,
+        "wrTgtPct": 48.8,
+        "teTgtPct": 22.3,
+        "rbTgtPct": 29,
+        "passComp": 290,
+        "passYds": 3200,
+        "passTD": 20,
+        "passInt": 13,
+        "wrTgt": 219,
+        "teTgt": 100,
+        "rbTgt": 130,
+        "rushYds": 2340,
+        "rushTD": 16
+      },
       "players": [
         {
           "id": "p_1779062180429",
           "name": "Malik Willis",
-          "stats": {},
+          "stats": {
+            "games": 16,
+            "passTD": 19,
+            "passInt": 12,
+            "passAtt": 446,
+            "passComp": 272,
+            "passYds": 3037,
+            "rushAtt": 112,
+            "rushYds": 584,
+            "rushTD": 5,
+            "targets": 0,
+            "rec": 0,
+            "recYds": 0,
+            "recTD": 0
+          },
           "pos": "QB",
           "misc": false
         },
         {
           "id": "p_1779062312851",
           "name": "Quinn Ewers",
-          "stats": {},
+          "stats": {
+            "games": 1,
+            "passAtt": 29,
+            "passComp": 18,
+            "passTD": 1,
+            "passInt": 1,
+            "passYds": 163,
+            "rushAtt": 2,
+            "rushYds": 6,
+            "rushTD": 0,
+            "recTD": 0,
+            "targets": 0,
+            "rec": 0,
+            "recYds": 0
+          },
           "pos": "QB",
           "misc": false
         },
@@ -358,27 +411,66 @@
           "pos": "QB",
           "misc": true,
           "stats": {
-            "games": 17
+            "games": 17,
+            "passAtt": 0,
+            "passComp": 0,
+            "passYds": 0,
+            "passTD": 0,
+            "passInt": 0,
+            "rushAtt": 0,
+            "rushYds": 0,
+            "rushTD": 0,
+            "targets": 0,
+            "rec": 0,
+            "recYds": 0,
+            "recTD": 0
           }
         },
         {
           "id": "p_1779062322561",
           "name": "De'Von Achane",
-          "stats": {},
+          "stats": {
+            "games": 16,
+            "rushAtt": 233,
+            "rushYds": 1201,
+            "rushTD": 8,
+            "targets": 95,
+            "rec": 69,
+            "recYds": 532,
+            "recTD": 4
+          },
           "pos": "RB",
           "misc": false
         },
         {
           "id": "p_1779062329546",
           "name": "Ollie Gordon",
-          "stats": {},
+          "stats": {
+            "games": 16,
+            "rushAtt": 85,
+            "rushTD": 2,
+            "rushYds": 321,
+            "targets": 13,
+            "rec": 9,
+            "recYds": 58,
+            "recTD": 0
+          },
           "pos": "RB",
           "misc": false
         },
         {
           "id": "p_1779062336738",
           "name": "Jaylen Wright",
-          "stats": {},
+          "stats": {
+            "games": 14,
+            "rushAtt": 36,
+            "rushYds": 142,
+            "rushTD": 1,
+            "targets": 20,
+            "recTD": 0,
+            "rec": 14,
+            "recYds": 95
+          },
           "pos": "RB",
           "misc": false
         },
@@ -388,41 +480,93 @@
           "pos": "RB",
           "misc": true,
           "stats": {
-            "games": 17
+            "games": 17,
+            "rushAtt": 3,
+            "rushYds": 11,
+            "rushTD": 0,
+            "targets": 2,
+            "rec": 1,
+            "recYds": 6,
+            "recTD": 0
           }
         },
         {
           "id": "p_1779062345202",
           "name": "Malik Washington",
-          "stats": {},
+          "stats": {
+            "rushTD": 0,
+            "games": 16,
+            "rushAtt": 14,
+            "rushYds": 61,
+            "targets": 88,
+            "rec": 61,
+            "recYds": 704,
+            "recTD": 5
+          },
           "pos": "WR",
           "misc": false
         },
         {
           "id": "p_1779062359690",
           "name": "Jalen Tolbert",
-          "stats": {},
+          "stats": {
+            "rushTD": 0,
+            "games": 16,
+            "rushAtt": 0,
+            "rushYds": 0,
+            "targets": 58,
+            "rec": 36,
+            "recYds": 473,
+            "recTD": 3
+          },
           "pos": "WR",
           "misc": false
         },
         {
           "id": "p_1779062367986",
           "name": "Chris Bell",
-          "stats": {},
+          "stats": {
+            "rushTD": 0,
+            "games": 12,
+            "rushAtt": 0,
+            "rushYds": 0,
+            "targets": 26,
+            "rec": 13,
+            "recYds": 205,
+            "recTD": 2
+          },
           "pos": "WR",
           "misc": false
         },
         {
           "id": "p_1779062379738",
           "name": "Tutu Atwell",
-          "stats": {},
+          "stats": {
+            "rushTD": 0,
+            "games": 16,
+            "rushAtt": 1,
+            "rushYds": 2,
+            "targets": 24,
+            "rec": 12,
+            "recYds": 215,
+            "recTD": 1
+          },
           "pos": "WR",
           "misc": false
         },
         {
           "id": "p_1779062385171",
           "name": "Kevin Coleman",
-          "stats": {},
+          "stats": {
+            "rushTD": 0,
+            "games": 16,
+            "rushAtt": 4,
+            "rushYds": 12,
+            "targets": 18,
+            "rec": 10,
+            "recYds": 136,
+            "recTD": 1
+          },
           "pos": "WR",
           "misc": false
         },
@@ -432,20 +576,45 @@
           "pos": "WR",
           "misc": true,
           "stats": {
-            "games": 17
+            "games": 17,
+            "rushTD": 0,
+            "rushAtt": 0,
+            "rushYds": 0,
+            "targets": 5,
+            "rec": 2,
+            "recYds": 33,
+            "recTD": 0
           }
         },
         {
           "id": "p_1779062402902",
           "name": "Greg Dulcich",
-          "stats": {},
+          "stats": {
+            "rushAtt": 0,
+            "rushYds": 0,
+            "rushTD": 0,
+            "games": 12,
+            "targets": 61,
+            "rec": 38,
+            "recYds": 478,
+            "recTD": 3
+          },
           "pos": "TE",
           "misc": false
         },
         {
           "id": "p_1779062413307",
           "name": "Will Kacmarek",
-          "stats": {},
+          "stats": {
+            "rushAtt": 0,
+            "rushYds": 0,
+            "rushTD": 0,
+            "games": 16,
+            "targets": 26,
+            "rec": 17,
+            "recYds": 183,
+            "recTD": 1
+          },
           "pos": "TE",
           "misc": false
         },
@@ -455,7 +624,14 @@
           "pos": "TE",
           "misc": true,
           "stats": {
-            "games": 17
+            "games": 17,
+            "rushAtt": 0,
+            "rushYds": 0,
+            "rushTD": 0,
+            "targets": 13,
+            "rec": 8,
+            "recYds": 82,
+            "recTD": 0
           }
         }
       ],
@@ -469,18 +645,50 @@
     },
     "New_England_Patriots": {
       "teamStats": {
-        "rushPlays": 0,
-        "passAtt": 0,
+        "rushPlays": 487,
+        "passAtt": 539,
         "_totalPlaysConflict": false,
-        "totalPlays": 0,
-        "passRate": 0,
-        "rushRate": "100.0"
+        "totalPlays": 1070,
+        "passRate": 54.5,
+        "rushRate": "45.5",
+        "passPlays": 583,
+        "sacks": 44,
+        "sackYds": 225,
+        "yardsPerSack": 5.1,
+        "deadPassPlays": 23,
+        "targets": 511,
+        "wrTgtPct": 63,
+        "teTgtPct": 20.7,
+        "rbTgtPct": 16.2,
+        "passComp": 359,
+        "passYds": 4020,
+        "passTD": 30,
+        "passInt": 12,
+        "wrTgt": 322,
+        "teTgt": 106,
+        "rbTgt": 83,
+        "rushYds": 2182,
+        "rushTD": 20
       },
       "players": [
         {
           "id": "p_1779074366335",
           "name": "Drake Maye",
-          "stats": {},
+          "stats": {
+            "games": 17,
+            "passAtt": 539,
+            "passComp": 359,
+            "passYds": 4020,
+            "passTD": 30,
+            "passInt": 12,
+            "recTD": 0,
+            "targets": 0,
+            "rec": 0,
+            "recYds": 0,
+            "rushAtt": 95,
+            "rushYds": 440,
+            "rushTD": 5
+          },
           "pos": "QB",
           "misc": false
         },
@@ -489,7 +697,21 @@
           "name": "Tommy DeVito",
           "pos": "QB",
           "misc": false,
-          "stats": {}
+          "stats": {
+            "games": 0,
+            "passAtt": 0,
+            "passComp": 0,
+            "passYds": 0,
+            "passTD": 0,
+            "passInt": 0,
+            "rushAtt": 0,
+            "rushYds": 0,
+            "rushTD": 0,
+            "targets": 0,
+            "rec": 0,
+            "recYds": 0,
+            "recTD": 0
+          }
         },
         {
           "id": "misc_QB_New_England_Patriots",
@@ -497,29 +719,47 @@
           "pos": "QB",
           "misc": true,
           "stats": {
-            "games": 17
+            "games": 17,
+            "rushAtt": 0,
+            "rushYds": 0,
+            "rushTD": 0,
+            "targets": 0,
+            "rec": 0,
+            "recYds": 0,
+            "recTD": 0
           }
         },
         {
           "id": "p_1779074372694",
           "name": "Rhamondre Stevenson",
-          "stats": {},
+          "stats": {
+            "games": 15,
+            "rushAtt": 153,
+            "rushYds": 655,
+            "rushTD": 6,
+            "targets": 33,
+            "rec": 27,
+            "recYds": 219,
+            "recTD": 2
+          },
           "pos": "RB",
           "misc": false
         },
         {
           "id": "p_1779074421786",
           "name": "TreVeyon Henderson",
-          "stats": {},
+          "stats": {
+            "games": 16,
+            "rushAtt": 192,
+            "rushYds": 895,
+            "rushTD": 8,
+            "targets": 38,
+            "rec": 31,
+            "recYds": 230,
+            "recTD": 2
+          },
           "pos": "RB",
           "misc": false
-        },
-        {
-          "id": "p_1779235320806",
-          "name": "Myles Montgomery",
-          "pos": "RB",
-          "misc": false,
-          "stats": {}
         },
         {
           "id": "misc_RB_New_England_Patriots",
@@ -527,48 +767,109 @@
           "pos": "RB",
           "misc": true,
           "stats": {
-            "games": 17
+            "games": 17,
+            "rushAtt": 40,
+            "rushTD": 1,
+            "rushYds": 160,
+            "targets": 12,
+            "rec": 9,
+            "recTD": 0,
+            "recYds": 64
+          }
+        },
+        {
+          "id": "p_1781062194848_ycq6",
+          "name": "A.J. Brown",
+          "pos": "WR",
+          "misc": false,
+          "stats": {
+            "rushAtt": 0,
+            "games": 16,
+            "rushYds": 0,
+            "rushTD": 0,
+            "targets": 143,
+            "rec": 97,
+            "recYds": 1210,
+            "recTD": 8
           }
         },
         {
           "id": "p_1779074459111",
           "name": "Roemo Doubs",
-          "stats": {},
+          "stats": {
+            "rushAtt": 0,
+            "rushTD": 0,
+            "targets": 95,
+            "rushYds": 0,
+            "games": 16,
+            "rec": 61,
+            "recYds": 783,
+            "recTD": 6
+          },
           "pos": "WR",
           "misc": false
         },
         {
           "id": "p_1779074477981",
           "name": "Kayshon Boutte",
-          "stats": {},
+          "stats": {
+            "rushAtt": 0,
+            "rushYds": 0,
+            "rushTD": 0,
+            "targets": 30,
+            "games": 15,
+            "rec": 18,
+            "recYds": 290,
+            "recTD": 2
+          },
           "pos": "WR",
           "misc": false
         },
         {
           "id": "p_1779074471461",
           "name": "DeMario Douglas",
-          "stats": {},
+          "stats": {
+            "rushAtt": 3,
+            "rushYds": 12,
+            "rushTD": 0,
+            "targets": 30,
+            "rec": 22,
+            "recYds": 230,
+            "recTD": 1,
+            "games": 16
+          },
           "pos": "WR",
           "misc": false
         },
         {
           "id": "p_1779074381299",
           "name": "Kyle Williams",
-          "stats": {},
+          "stats": {
+            "rushAtt": 4,
+            "rushTD": 0,
+            "rushYds": 20,
+            "targets": 21,
+            "rec": 13,
+            "recYds": 200,
+            "recTD": 1,
+            "games": 16
+          },
           "pos": "WR",
           "misc": false
         },
         {
           "id": "p_1779074395364",
           "name": "Efton Chism",
-          "stats": {},
-          "pos": "WR",
-          "misc": false
-        },
-        {
-          "id": "p_1779074484792",
-          "name": "Marquez Valdes-Scantling",
-          "stats": {},
+          "stats": {
+            "rushAtt": 0,
+            "rushTD": 0,
+            "rushYds": 0,
+            "targets": 3,
+            "rec": 3,
+            "recYds": 34,
+            "recTD": 0,
+            "games": 16
+          },
           "pos": "WR",
           "misc": false
         },
@@ -578,20 +879,45 @@
           "pos": "WR",
           "misc": true,
           "stats": {
-            "games": 17
+            "games": 17,
+            "rushAtt": 0,
+            "rushTD": 0,
+            "rushYds": 0,
+            "targets": 0,
+            "rec": 0,
+            "recYds": 0,
+            "recTD": 0
           }
         },
         {
           "id": "p_1779074401627",
           "name": "Hunter Henry",
-          "stats": {},
+          "stats": {
+            "rushAtt": 0,
+            "rushYds": 0,
+            "rushTD": 0,
+            "games": 16,
+            "targets": 76,
+            "rec": 55,
+            "recYds": 540,
+            "recTD": 6
+          },
           "pos": "TE",
           "misc": false
         },
         {
           "id": "p_1779074412260",
           "name": "Eli Raridon",
-          "stats": {},
+          "stats": {
+            "rushAtt": 0,
+            "rushYds": 0,
+            "rushTD": 0,
+            "games": 16,
+            "targets": 24,
+            "rec": 18,
+            "recTD": 2,
+            "recYds": 180
+          },
           "pos": "TE",
           "misc": false
         },
@@ -601,15 +927,15 @@
           "pos": "TE",
           "misc": true,
           "stats": {
-            "games": 17
+            "games": 17,
+            "rushAtt": 0,
+            "rushYds": 0,
+            "rushTD": 0,
+            "targets": 6,
+            "rec": 5,
+            "recYds": 40,
+            "recTD": 0
           }
-        },
-        {
-          "id": "p_1781062194848_ycq6",
-          "name": "A.J. Brown",
-          "pos": "WR",
-          "misc": false,
-          "stats": {}
         }
       ],
       "staging": [
@@ -621,12 +947,51 @@
       ]
     },
     "New_York_Jets": {
-      "teamStats": {},
+      "teamStats": {
+        "totalPlays": 1025,
+        "_totalPlaysConflict": false,
+        "passRate": 57,
+        "rushRate": "43.0",
+        "passPlays": 584,
+        "rushPlays": 441,
+        "deadPassPlays": 20,
+        "sacks": 44,
+        "passAtt": 540,
+        "targets": 520,
+        "wrTgtPct": 63.5,
+        "teTgtPct": 15,
+        "rbTgtPct": 21.5,
+        "sackYds": 309,
+        "yardsPerSack": 7,
+        "passComp": 353,
+        "passYds": 3640,
+        "passTD": 24,
+        "passInt": 13,
+        "wrTgt": 330,
+        "teTgt": 78,
+        "rbTgt": 112,
+        "rushYds": 1973,
+        "rushTD": 15
+      },
       "players": [
         {
           "id": "p_1779075208788",
           "name": "Geno Smith",
-          "stats": {},
+          "stats": {
+            "games": 17,
+            "passAtt": 540,
+            "passComp": 361,
+            "passYds": 3640,
+            "passTD": 24,
+            "passInt": 13,
+            "targets": 0,
+            "rec": 0,
+            "recYds": 0,
+            "recTD": 0,
+            "rushAtt": 35,
+            "rushYds": 142,
+            "rushTD": 1
+          },
           "pos": "QB",
           "misc": false
         },
@@ -636,27 +1001,66 @@
           "pos": "QB",
           "misc": true,
           "stats": {
-            "games": 17
+            "games": 17,
+            "targets": 0,
+            "rec": 0,
+            "recYds": 0,
+            "recTD": 0,
+            "rushAtt": 0,
+            "rushYds": 0,
+            "rushTD": 0,
+            "passAtt": 0,
+            "passComp": 0,
+            "passYds": 0,
+            "passTD": 0,
+            "passInt": 0
           }
         },
         {
           "id": "p_1779075213071",
           "name": "Breece Hall",
-          "stats": {},
+          "stats": {
+            "games": 16,
+            "rushAtt": 236,
+            "rushYds": 1085,
+            "rushTD": 7,
+            "targets": 64,
+            "recTD": 3,
+            "rec": 51,
+            "recYds": 422
+          },
           "pos": "RB",
           "misc": false
         },
         {
           "id": "p_1779075221100",
           "name": "Braelon Allen",
-          "stats": {},
+          "stats": {
+            "games": 15,
+            "rushAtt": 101,
+            "rushYds": 424,
+            "rushTD": 5,
+            "targets": 21,
+            "recTD": 1,
+            "rec": 17,
+            "recYds": 116
+          },
           "pos": "RB",
           "misc": false
         },
         {
           "id": "p_1779075224757",
           "name": "Isaiah Davis",
-          "stats": {},
+          "stats": {
+            "games": 16,
+            "rushAtt": 51,
+            "rushTD": 2,
+            "rushYds": 249,
+            "targets": 24,
+            "recTD": 1,
+            "rec": 20,
+            "recYds": 152
+          },
           "pos": "RB",
           "misc": false
         },
@@ -666,27 +1070,61 @@
           "pos": "RB",
           "misc": true,
           "stats": {
-            "games": 17
+            "games": 17,
+            "rushAtt": 10,
+            "rushYds": 40,
+            "rushTD": 0,
+            "targets": 3,
+            "recTD": 0,
+            "rec": 2,
+            "recYds": 16
           }
         },
         {
           "id": "p_1779075230093",
           "name": "Garrett Wilson",
-          "stats": {},
+          "stats": {
+            "rushAtt": 2,
+            "rushYds": 12,
+            "rushTD": 0,
+            "games": 16,
+            "targets": 161,
+            "rec": 109,
+            "recYds": 1219,
+            "recTD": 7
+          },
           "pos": "WR",
           "misc": false
         },
         {
           "id": "p_1779075242663",
           "name": "Adonai Mitchell",
-          "stats": {},
+          "stats": {
+            "rushAtt": 0,
+            "rushYds": 0,
+            "rushTD": 0,
+            "games": 16,
+            "targets": 84,
+            "rec": 45,
+            "recYds": 575,
+            "recTD": 3
+          },
           "pos": "WR",
           "misc": false
         },
         {
           "id": "p_1779075253318",
           "name": "Omar Cooper",
-          "stats": {},
+          "stats": {
+            "rushAtt": 4,
+            "rushYds": 15,
+            "rushTD": 0,
+            "games": 16,
+            "targets": 72,
+            "rec": 45,
+            "recYds": 515,
+            "recTD": 3
+          },
           "pos": "WR",
           "misc": false
         },
@@ -696,20 +1134,45 @@
           "pos": "WR",
           "misc": true,
           "stats": {
-            "games": 17
+            "games": 17,
+            "rushAtt": 0,
+            "rushYds": 0,
+            "rushTD": 0,
+            "targets": 13,
+            "rec": 8,
+            "recYds": 71,
+            "recTD": 0
           }
         },
         {
           "id": "p_1779075259038",
           "name": "Kenyon Sadiq",
-          "stats": {},
+          "stats": {
+            "rushAtt": 2,
+            "rushYds": 6,
+            "rushTD": 0,
+            "games": 16,
+            "targets": 40,
+            "recTD": 3,
+            "rec": 28,
+            "recYds": 281
+          },
           "pos": "TE",
           "misc": false
         },
         {
           "id": "p_1779075267232",
           "name": "Mason Taylor",
-          "stats": {},
+          "stats": {
+            "rushAtt": 0,
+            "rushYds": 0,
+            "rushTD": 0,
+            "games": 16,
+            "targets": 35,
+            "rec": 26,
+            "recYds": 253,
+            "recTD": 2
+          },
           "pos": "TE",
           "misc": false
         },
@@ -719,7 +1182,14 @@
           "pos": "TE",
           "misc": true,
           "stats": {
-            "games": 17
+            "games": 17,
+            "rushAtt": 0,
+            "rushYds": 0,
+            "rushTD": 0,
+            "targets": 3,
+            "rec": 2,
+            "recYds": 20,
+            "recTD": 1
           }
         }
       ],
@@ -732,14 +1202,74 @@
       ]
     },
     "Baltimore_Ravens": {
-      "teamStats": {},
+      "teamStats": {
+        "totalPlays": 1060,
+        "_totalPlaysConflict": false,
+        "passRate": 48.7,
+        "rushRate": "51.3",
+        "passPlays": 516,
+        "rushPlays": 544,
+        "passAtt": 477,
+        "sacks": 39,
+        "deadPassPlays": 15,
+        "targets": 462,
+        "wrTgtPct": 62.8,
+        "teTgtPct": 22.5,
+        "rbTgtPct": 14.7,
+        "passComp": 314,
+        "passYds": 3770,
+        "sackYds": 235,
+        "yardsPerSack": 6,
+        "passTD": 27,
+        "passInt": 9,
+        "teTgt": 104,
+        "rbTgt": 68,
+        "wrTgt": 290,
+        "rushYds": 2722,
+        "rushTD": 24
+      },
       "players": [
         {
           "id": "p_1779075284548",
           "name": "Lamar Jackson",
-          "stats": {},
+          "stats": {
+            "games": 15,
+            "passAtt": 424,
+            "passComp": 282,
+            "passYds": 3440,
+            "passTD": 24,
+            "passInt": 7,
+            "targets": 0,
+            "rec": 0,
+            "recYds": 0,
+            "recTD": 0,
+            "rushAtt": 105,
+            "rushYds": 592,
+            "rushTD": 4
+          },
           "pos": "QB",
           "misc": false
+        },
+        {
+          "id": "p_1782870191814",
+          "name": "Tyler Huntley",
+          "pos": "QB",
+          "misc": false,
+          "stats": {
+            "games": 2,
+            "passAtt": 53,
+            "passComp": 32,
+            "passYds": 330,
+            "passTD": 3,
+            "passInt": 2,
+            "targets": 0,
+            "rec": 0,
+            "recYds": 0,
+            "recTD": 0,
+            "rushAtt": 9,
+            "rushYds": 56,
+            "rushTD": 1
+          }
         },
         {
           "id": "misc_QB_Baltimore_Ravens",
@@ -747,15 +1277,68 @@
           "pos": "QB",
           "misc": true,
           "stats": {
-            "games": 17
+            "games": 17,
+            "passAtt": 0,
+            "passComp": 0,
+            "passYds": 0,
+            "passTD": 0,
+            "passInt": 0,
+            "targets": 0,
+            "rec": 0,
+            "recYds": 0,
+            "recTD": 0,
+            "rushAtt": 0,
+            "rushYds": 0,
+            "rushTD": 0
           }
         },
         {
           "id": "p_1779075294847",
           "name": "Derrick Henry",
-          "stats": {},
+          "stats": {
+            "games": 16,
+            "rushAtt": 312,
+            "rushYds": 1520,
+            "rushTD": 15,
+            "targets": 17,
+            "rec": 13,
+            "recTD": 0,
+            "recYds": 124
+          },
           "pos": "RB",
           "misc": false
+        },
+        {
+          "id": "p_1782870762766",
+          "name": "Justice Hill",
+          "pos": "RB",
+          "misc": false,
+          "stats": {
+            "games": 15,
+            "rushAtt": 62,
+            "rushYds": 296,
+            "rushTD": 2,
+            "targets": 42,
+            "rec": 33,
+            "recYds": 280,
+            "recTD": 1
+          }
+        },
+        {
+          "id": "p_1782870766559",
+          "name": "Rasheen Ali",
+          "pos": "RB",
+          "misc": false,
+          "stats": {
+            "games": 15,
+            "rushAtt": 26,
+            "rushYds": 107,
+            "rushTD": 1,
+            "targets": 6,
+            "rec": 4,
+            "recTD": 0,
+            "recYds": 28
+          }
         },
         {
           "id": "misc_RB_Baltimore_Ravens",
@@ -763,34 +1346,77 @@
           "pos": "RB",
           "misc": true,
           "stats": {
-            "games": 17
+            "games": 17,
+            "rushAtt": 16,
+            "rushYds": 71,
+            "rushTD": 0,
+            "targets": 3,
+            "rec": 2,
+            "recYds": 18,
+            "recTD": 0
           }
         },
         {
           "id": "p_1779075305742",
           "name": "Zay Flowers",
-          "stats": {},
+          "stats": {
+            "games": 16,
+            "rushAtt": 12,
+            "rushYds": 74,
+            "rushTD": 1,
+            "targets": 122,
+            "rec": 85,
+            "recYds": 1174,
+            "recTD": 7
+          },
           "pos": "WR",
           "misc": false
         },
         {
           "id": "p_1779075312336",
           "name": "Elijah Sarratt",
-          "stats": {},
+          "stats": {
+            "rushAtt": 0,
+            "rushYds": 0,
+            "rushTD": 0,
+            "games": 16,
+            "targets": 72,
+            "rec": 50,
+            "recTD": 5,
+            "recYds": 588
+          },
           "pos": "WR",
           "misc": false
         },
         {
           "id": "p_1779075318208",
           "name": "Ja'Kobi Lane",
-          "stats": {},
+          "stats": {
+            "rushYds": 0,
+            "rushTD": 0,
+            "games": 16,
+            "rushAtt": 0,
+            "targets": 31,
+            "rec": 15,
+            "recYds": 241,
+            "recTD": 3
+          },
           "pos": "WR",
           "misc": false
         },
         {
           "id": "p_1779075324040",
           "name": "Rashod Bateman",
-          "stats": {},
+          "stats": {
+            "rushAtt": 0,
+            "rushYds": 0,
+            "rushTD": 0,
+            "games": 14,
+            "targets": 54,
+            "rec": 31,
+            "recYds": 437,
+            "recTD": 3
+          },
           "pos": "WR",
           "misc": false
         },
@@ -800,13 +1426,28 @@
           "pos": "WR",
           "misc": true,
           "stats": {
-            "games": 17
+            "games": 17,
+            "rushAtt": 0,
+            "rushYds": 0,
+            "rushTD": 0,
+            "targets": 11,
+            "rec": 6,
+            "recTD": 0,
+            "recYds": 60
           }
         },
         {
           "id": "p_1779075330776",
           "name": "Mark Andrews",
-          "stats": {},
+          "stats": {
+            "rushAtt": 2,
+            "rushYds": 6,
+            "rushTD": 0,
+            "targets": 83,
+            "recTD": 7,
+            "rec": 61,
+            "recYds": 673
+          },
           "pos": "TE",
           "misc": false
         },
@@ -816,7 +1457,14 @@
           "pos": "TE",
           "misc": true,
           "stats": {
-            "games": 17
+            "games": 17,
+            "rushAtt": 0,
+            "rushYds": 0,
+            "rushTD": 0,
+            "targets": 21,
+            "rec": 14,
+            "recYds": 147,
+            "recTD": 1
           }
         }
       ],
@@ -824,25 +1472,73 @@
     },
     "Cincinnati_Bengals": {
       "teamStats": {
-        "totalPlays": 0,
-        "passRate": "0.0",
-        "passPlays": 0,
-        "rushPlays": 0,
+        "totalPlays": 1075,
+        "passRate": 62.8,
+        "passPlays": 675,
+        "rushPlays": 400,
         "_totalPlaysConflict": false,
-        "rushRate": "100.0"
+        "rushRate": "37.2",
+        "sacks": 45,
+        "passAtt": 630,
+        "deadPassPlays": 20,
+        "targets": 610,
+        "wrTgtPct": 63.6,
+        "teTgtPct": 16.9,
+        "rbTgtPct": 19.5,
+        "passComp": 427,
+        "passYds": 4550,
+        "sackYds": 310,
+        "yardsPerSack": 6.9,
+        "passTD": 37,
+        "passInt": 12,
+        "wrTgt": 388,
+        "rbTgt": 119,
+        "teTgt": 103,
+        "rushYds": 1680,
+        "rushTD": 13
       },
       "players": [
         {
           "id": "p_1779151641171",
           "name": "Joe Burrow",
           "stats": {
-            "rushAtt": "",
-            "rushYds": "",
-            "rushTD": "",
-            "games": ""
+            "rushAtt": 39,
+            "rushYds": 130,
+            "rushTD": 1,
+            "games": 15,
+            "passAtt": 554,
+            "passComp": 377,
+            "passTD": 34,
+            "passYds": 4060,
+            "passInt": 10,
+            "targets": 0,
+            "rec": 0,
+            "recYds": 0,
+            "recTD": 0
           },
           "pos": "QB",
           "misc": false
+        },
+        {
+          "id": "p_1784689580989",
+          "name": "Joe Flacco",
+          "pos": "QB",
+          "misc": false,
+          "stats": {
+            "games": 2,
+            "passAtt": 76,
+            "passComp": 50,
+            "passTD": 3,
+            "passYds": 490,
+            "passInt": 2,
+            "targets": 0,
+            "rec": 0,
+            "recYds": 0,
+            "recTD": 0,
+            "rushAtt": 3,
+            "rushYds": 6,
+            "rushTD": 0
+          }
         },
         {
           "id": "misc_QB_Cincinnati_Bengals",
@@ -850,20 +1546,50 @@
           "pos": "QB",
           "misc": true,
           "stats": {
-            "games": 17
+            "games": 17,
+            "passAtt": 0,
+            "passComp": 0,
+            "passYds": 0,
+            "passTD": 0,
+            "passInt": 0,
+            "targets": 0,
+            "rec": 0,
+            "recYds": 0,
+            "recTD": 0,
+            "rushAtt": 0,
+            "rushYds": 0,
+            "rushTD": 0
           }
         },
         {
           "id": "p_1779151645431",
           "name": "Chase Brown",
-          "stats": {},
+          "stats": {
+            "games": 16,
+            "rushAtt": 225,
+            "rushYds": 972,
+            "rushTD": 9,
+            "targets": 77,
+            "rec": 62,
+            "recYds": 414,
+            "recTD": 3
+          },
           "pos": "RB",
           "misc": false
         },
         {
           "id": "p_1779151653780",
           "name": "Samaje Perine",
-          "stats": {},
+          "stats": {
+            "games": 16,
+            "rushAtt": 68,
+            "rushYds": 304,
+            "rushTD": 2,
+            "targets": 28,
+            "rec": 24,
+            "recYds": 166,
+            "recTD": 2
+          },
           "pos": "RB",
           "misc": false
         },
@@ -872,7 +1598,16 @@
           "name": "Tahj Brooks",
           "pos": "RB",
           "misc": false,
-          "stats": {}
+          "stats": {
+            "games": 16,
+            "rushAtt": 59,
+            "rushYds": 244,
+            "rushTD": 1,
+            "targets": 13,
+            "rec": 10,
+            "recTD": 0,
+            "recYds": 60
+          }
         },
         {
           "id": "misc_RB_Cincinnati_Bengals",
@@ -880,21 +1615,28 @@
           "pos": "RB",
           "misc": true,
           "stats": {
-            "games": 17
+            "games": 17,
+            "rushAtt": 3,
+            "rushYds": 9,
+            "rushTD": 0,
+            "targets": 1,
+            "rec": 1,
+            "recTD": 0,
+            "recYds": 6
           }
         },
         {
           "id": "p_1779151662394",
           "name": "Ja'Marr Chase",
           "stats": {
-            "recYds": "",
-            "rushAtt": "",
-            "rushYds": "",
-            "rushTD": "",
-            "targets": "",
-            "rec": "",
-            "recTD": "",
-            "games": ""
+            "recYds": 1540,
+            "rushAtt": 3,
+            "rushYds": 15,
+            "rushTD": 0,
+            "targets": 180,
+            "rec": 125,
+            "recTD": 12,
+            "games": 16
           },
           "pos": "WR",
           "misc": false
@@ -903,14 +1645,14 @@
           "id": "p_1779151674733",
           "name": "Tee Higgins",
           "stats": {
-            "rushAtt": "",
-            "rushYds": "",
-            "rushTD": "",
-            "targets": "",
-            "rec": "",
-            "recYds": "",
-            "recTD": "",
-            "games": ""
+            "rushAtt": 0,
+            "rushYds": 0,
+            "rushTD": 0,
+            "targets": 109,
+            "rec": 69,
+            "recYds": 968,
+            "recTD": 9,
+            "games": 14
           },
           "pos": "WR",
           "misc": false
@@ -920,14 +1662,16 @@
           "name": "Andrei Iosivas",
           "pos": "WR",
           "misc": false,
-          "stats": {}
-        },
-        {
-          "id": "p_1779156001713",
-          "name": "Charlie Jones",
-          "pos": "WR",
-          "misc": false,
-          "stats": {}
+          "stats": {
+            "rushAtt": 0,
+            "rushTD": 0,
+            "rushYds": 0,
+            "games": 16,
+            "targets": 73,
+            "rec": 48,
+            "recYds": 533,
+            "recTD": 4
+          }
         },
         {
           "id": "misc_WR_Cincinnati_Bengals",
@@ -935,7 +1679,14 @@
           "pos": "WR",
           "misc": true,
           "stats": {
-            "games": 17
+            "games": 17,
+            "rushAtt": 0,
+            "rushTD": 0,
+            "rushYds": 0,
+            "targets": 26,
+            "rec": 16,
+            "recYds": 156,
+            "recTD": 1
           }
         },
         {
@@ -944,9 +1695,14 @@
           "pos": "TE",
           "misc": false,
           "stats": {
-            "rushAtt": "",
-            "rushYds": "",
-            "rushTD": ""
+            "rushAtt": 0,
+            "rushYds": 0,
+            "rushTD": 0,
+            "targets": 64,
+            "games": 16,
+            "rec": 43,
+            "recYds": 447,
+            "recTD": 3
           }
         },
         {
@@ -955,10 +1711,14 @@
           "pos": "TE",
           "misc": true,
           "stats": {
-            "rushTD": "",
-            "rushAtt": "",
-            "rushYds": "",
-            "games": 17
+            "rushTD": 0,
+            "rushAtt": 0,
+            "rushYds": 0,
+            "games": 17,
+            "targets": 39,
+            "rec": 29,
+            "recYds": 260,
+            "recTD": 3
           }
         }
       ],
@@ -979,7 +1739,7 @@
         "passComp": 339,
         "passTD": 23,
         "rushYds": 1987,
-        "rushTD": 14,
+        "rushTD": 15,
         "passYds": 3640,
         "passInt": 15,
         "wrTgt": 328,
@@ -1024,7 +1784,7 @@
             "passComp": 103,
             "passYds": 1155,
             "passTD": 7,
-            "passInt": 5,
+            "passInt": 6,
             "rushAtt": 20,
             "rushYds": 104,
             "rushTD": 2,
@@ -1412,35 +2172,116 @@
       "staging": []
     },
     "Cleveland_Browns": {
-      "teamStats": {},
+      "teamStats": {
+        "totalPlays": 1020,
+        "_totalPlaysConflict": false,
+        "passRate": 58,
+        "rushRate": "42.0",
+        "passPlays": 592,
+        "rushPlays": 428,
+        "deadPassPlays": 34,
+        "sacks": 50,
+        "passAtt": 542,
+        "targets": 508,
+        "wrTgtPct": 61,
+        "teTgtPct": 26,
+        "rbTgtPct": 13,
+        "sackYds": 360,
+        "yardsPerSack": 7.2,
+        "passYds": 3449,
+        "passTD": 20,
+        "passInt": 15,
+        "passComp": 340,
+        "teTgt": 132,
+        "wrTgt": 310,
+        "rbTgt": 66,
+        "rushYds": 1798,
+        "rushTD": 12
+      },
       "players": [
         {
           "id": "p_1779245462592",
           "name": "Shadeur Sanders",
           "pos": "QB",
           "misc": false,
-          "stats": {}
-        },
-        {
-          "id": "p_1779245481913",
-          "name": "Dillon Gabriel",
-          "pos": "QB",
-          "misc": false,
-          "stats": {}
+          "stats": {
+            "games": 11,
+            "passAtt": 367,
+            "passComp": 233,
+            "passYds": 2356,
+            "passTD": 13,
+            "passInt": 9,
+            "targets": 0,
+            "rec": 0,
+            "recYds": 0,
+            "recTD": 0,
+            "rushAtt": 34,
+            "rushYds": 145,
+            "rushTD": 1
+          }
         },
         {
           "id": "p_1779245488801",
           "name": "Deshaun Watson",
           "pos": "QB",
           "misc": false,
-          "stats": {}
+          "stats": {
+            "games": 4,
+            "passAtt": 128,
+            "passComp": 80,
+            "passYds": 809,
+            "passTD": 5,
+            "passInt": 4,
+            "targets": 0,
+            "rec": 0,
+            "recYds": 0,
+            "recTD": 0,
+            "rushAtt": 15,
+            "rushYds": 62,
+            "rushTD": 1
+          }
+        },
+        {
+          "id": "p_1779245481913",
+          "name": "Dillon Gabriel",
+          "pos": "QB",
+          "misc": false,
+          "stats": {
+            "games": 1,
+            "passAtt": 28,
+            "passComp": 17,
+            "passYds": 166,
+            "passTD": 1,
+            "passInt": 1,
+            "targets": 0,
+            "rec": 0,
+            "recYds": 0,
+            "recTD": 0,
+            "rushAtt": 1,
+            "rushYds": 2,
+            "rushTD": 0
+          }
         },
         {
           "id": "p_1779245492466",
           "name": "Taylen Green",
           "pos": "QB",
           "misc": false,
-          "stats": {}
+          "stats": {
+            "games": 1,
+            "passAtt": 19,
+            "passComp": 10,
+            "passYds": 118,
+            "passTD": 1,
+            "passInt": 1,
+            "targets": 0,
+            "rec": 0,
+            "recYds": 0,
+            "recTD": 0,
+            "rushAtt": 8,
+            "rushYds": 36,
+            "rushTD": 0
+          }
         },
         {
           "id": "misc_QB_Cleveland_Browns",
@@ -1448,7 +2289,14 @@
           "pos": "QB",
           "misc": true,
           "stats": {
-            "games": 17
+            "games": 17,
+            "targets": 0,
+            "rec": 0,
+            "recYds": 0,
+            "recTD": 0,
+            "rushAtt": 0,
+            "rushYds": 0,
+            "rushTD": 0
           }
         },
         {
@@ -1456,21 +2304,48 @@
           "name": "Quinshon Judkins",
           "pos": "RB",
           "misc": false,
-          "stats": {}
+          "stats": {
+            "games": 15,
+            "rushTD": 9,
+            "rushAtt": 274,
+            "rushYds": 1172,
+            "targets": 36,
+            "rec": 27,
+            "recYds": 172,
+            "recTD": 1
+          }
         },
         {
           "id": "p_1779245511202",
           "name": "Dylan Sampson",
           "pos": "RB",
           "misc": false,
-          "stats": {}
+          "stats": {
+            "games": 16,
+            "rushTD": 1,
+            "rushAtt": 54,
+            "rushYds": 212,
+            "targets": 25,
+            "rec": 18,
+            "recTD": 1,
+            "recYds": 119
+          }
         },
         {
           "id": "p_1779245528209",
           "name": "Raheim Sanders",
           "pos": "RB",
           "misc": false,
-          "stats": {}
+          "stats": {
+            "games": 16,
+            "rushTD": 0,
+            "rushAtt": 18,
+            "rushYds": 65,
+            "targets": 3,
+            "rec": 2,
+            "recTD": 0,
+            "recYds": 11
+          }
         },
         {
           "id": "misc_RB_Cleveland_Browns",
@@ -1478,7 +2353,14 @@
           "pos": "RB",
           "misc": true,
           "stats": {
-            "games": 17
+            "games": 17,
+            "rushAtt": 2,
+            "rushYds": 6,
+            "rushTD": 0,
+            "targets": 2,
+            "rec": 2,
+            "recTD": 0,
+            "recYds": 11
           }
         },
         {
@@ -1486,42 +2368,96 @@
           "name": "KC Concepcion",
           "pos": "WR",
           "misc": false,
-          "stats": {}
+          "stats": {
+            "games": 16,
+            "rushAtt": 8,
+            "rushYds": 37,
+            "rushTD": 0,
+            "targets": 85,
+            "rec": 56,
+            "recTD": 2,
+            "recYds": 570
+          }
         },
         {
           "id": "p_1779245573859",
           "name": "Denzel Boston",
           "pos": "WR",
           "misc": false,
-          "stats": {}
+          "stats": {
+            "games": 16,
+            "rushAtt": 3,
+            "rushYds": 15,
+            "rushTD": 0,
+            "targets": 56,
+            "rec": 38,
+            "recTD": 3,
+            "recYds": 383
+          }
         },
         {
           "id": "p_1779245542459",
           "name": "Jerry Jeudy",
           "pos": "WR",
           "misc": false,
-          "stats": {}
+          "stats": {
+            "games": 16,
+            "rushAtt": 1,
+            "rushYds": 3,
+            "rushTD": 0,
+            "targets": 91,
+            "rec": 56,
+            "recTD": 3,
+            "recYds": 678
+          }
         },
         {
           "id": "p_1779245554027",
           "name": "Isaiah Bond",
           "pos": "WR",
           "misc": false,
-          "stats": {}
+          "stats": {
+            "games": 16,
+            "rushAtt": 4,
+            "rushYds": 24,
+            "rushTD": 0,
+            "targets": 61,
+            "rec": 36,
+            "recTD": 2,
+            "recYds": 495
+          }
         },
         {
           "id": "p_1779245612309",
           "name": "Cedric Tillman",
           "pos": "WR",
           "misc": false,
-          "stats": {}
+          "stats": {
+            "games": 16,
+            "rushAtt": 0,
+            "rushYds": 0,
+            "rushTD": 0,
+            "targets": 7,
+            "rec": 4,
+            "recTD": 0,
+            "recYds": 41
+          }
         },
         {
           "id": "p_1779245623484",
           "name": "Jamari Thrash",
           "pos": "WR",
           "misc": false,
-          "stats": {}
+          "stats": {
+            "games": 16,
+            "rushAtt": 0,
+            "rushYds": 0,
+            "rushTD": 0,
+            "targets": 10,
+            "rec": 7,
+            "recTD": 0,
+            "recYds": 65
+          }
         },
         {
           "id": "misc_WR_Cleveland_Browns",
@@ -1529,7 +2465,14 @@
           "pos": "WR",
           "misc": true,
           "stats": {
-            "games": 17
+            "games": 17,
+            "rushAtt": 0,
+            "rushYds": 0,
+            "rushTD": 0,
+            "targets": 0,
+            "rec": 0,
+            "recYds": 0,
+            "recTD": 0
           }
         },
         {
@@ -1537,7 +2480,16 @@
           "name": "Harold Fannin",
           "pos": "TE",
           "misc": false,
-          "stats": {}
+          "stats": {
+            "games": 16,
+            "rushAtt": 6,
+            "rushYds": 19,
+            "rushTD": 0,
+            "targets": 118,
+            "rec": 84,
+            "recYds": 828,
+            "recTD": 7
+          }
         },
         {
           "id": "misc_TE_Cleveland_Browns",
@@ -1545,21 +2497,61 @@
           "pos": "TE",
           "misc": true,
           "stats": {
-            "games": 17
+            "games": 17,
+            "rushAtt": 0,
+            "rushYds": 0,
+            "rushTD": 0,
+            "targets": 14,
+            "rec": 10,
+            "recYds": 76,
+            "recTD": 1
           }
         }
       ],
       "staging": []
     },
     "Pittsburgh_Steelers": {
-      "teamStats": {},
+      "teamStats": {
+        "totalPlays": 998,
+        "_totalPlaysConflict": false,
+        "passRate": 61,
+        "rushRate": "39.0",
+        "passPlays": 611,
+        "rushPlays": 387,
+        "sacks": 33,
+        "passAtt": 578,
+        "deadPassPlays": 32,
+        "targets": 546,
+        "wrTgtPct": 55.3,
+        "teTgtPct": 22.2,
+        "rbTgtPct": 22.5,
+        "passComp": 370,
+        "passYds": 3670,
+        "sackYds": 208,
+        "yardsPerSack": 6.3,
+        "passTD": 25,
+        "passInt": 12,
+        "teTgt": 121,
+        "wrTgt": 302,
+        "rbTgt": 123,
+        "rushYds": 1738,
+        "rushTD": 14
+      },
       "players": [
         {
           "id": "p_1779245674119",
           "name": "Aaron Rodgers",
           "pos": "QB",
           "misc": false,
-          "stats": {}
+          "stats": {
+            "rushAtt": "",
+            "rushYds": "",
+            "rushTD": "",
+            "rec": "",
+            "recYds": "",
+            "recTD": "",
+            "targets": ""
+          }
         },
         {
           "id": "p_1779245680791",
@@ -4607,594 +5599,22 @@
       "staging": []
     }
   },
-  "rankingsState": {
-    "QB": {
-      "order": [
-        "p_1779061972256",
-        "p_1779157153873",
-        "p_1779157162099",
-        "p_1779247150761",
-        "p_1779061993334",
-        "p_1779074366335",
-        "p_1779331331036",
-        "p_1779246977661",
-        "p_1779330922851",
-        "p_1779331069248",
-        "p_1779151641171",
-        "p_1779333277790",
-        "p_1779062180429",
-        "p_1779075284548",
-        "p_1779246144259",
-        "p_1779245979255",
-        "p_1779332682669",
-        "p_1779246714342",
-        "p_1779330765352",
-        "p_1779333122381",
-        "p_1779331948392",
-        "p_1779247229092",
-        "p_1779331496714",
-        "p_1779075208788",
-        "p_1779330597994",
-        "p_1779245820506",
-        "p_1779245674119",
-        "p_1779246569763",
-        "p_1779246850943",
-        "p_1779332478928",
-        "p_1779246406686",
-        "p_1779246855681",
-        "p_1779245462592",
-        "p_1779246584163",
-        "p_1779245488801",
-        "p_1779245481913",
-        "p_1779245492466",
-        "p_1779246717734",
-        "p_1779245982953",
-        "p_1779062312851",
-        "p_1779235308248",
-        "p_1779245680791",
-        "p_1779245687863",
-        "p_1779245691655",
-        "p_1779245825155",
-        "p_1779245986976",
-        "p_1779246146676",
-        "p_1779246415104",
-        "p_1779246427144",
-        "p_1779246862113",
-        "p_1779246982716",
-        "p_1779330603130",
-        "p_1779330606219",
-        "p_1779330772559",
-        "p_1779330928988",
-        "p_1779331075009",
-        "p_1779331339894",
-        "p_1779331504179",
-        "p_1779331766505",
-        "p_1779331773154",
-        "p_1779331945433",
-        "p_1779333288694",
-        "p_1779332198280",
-        "p_1779332201528",
-        "p_1779332487552",
-        "p_1779332690659",
-        "p_1779332974456",
-        "p_1779332980632",
-        "p_1779332985217",
-        "p_1779247240029",
-        "p_1779333125843",
-        "p_1779333283735"
-      ],
-      "tiers": [
-        1,
-        2,
-        3,
-        "p_1779151641171",
-        "p_1779157153873"
-      ],
-      "tierBreaks": []
-    },
-    "TE": {
-      "order": [
-        "p_1779062109865",
-        "p_1779157203323",
-        "p_1779062115639",
-        "p_1779062124347",
-        "p_1779247191877",
-        "p_1779062402902",
-        "p_1779074412260",
-        "p_1779062413307",
-        "p_1779074401627",
-        "p_1779075259038",
-        "p_1779075267232",
-        "p_1779075330776",
-        "p_1779155977719",
-        "p_1779245629005",
-        "p_1779245790690",
-        "p_1779245795372",
-        "p_1779245940311",
-        "p_1779245947431",
-        "p_1779245957302",
-        "p_1779246081972",
-        "p_1779246093075",
-        "p_1779246112538",
-        "p_1779246118775",
-        "p_1779246372647",
-        "p_1779246380991",
-        "p_1779246531690",
-        "p_1779246540298",
-        "p_1779246671340",
-        "p_1779246677189",
-        "p_1779246685972",
-        "p_1779246814298",
-        "p_1779246818135",
-        "p_1779246947555",
-        "p_1779246954651",
-        "p_1779247096466",
-        "p_1779247103722",
-        "p_1779330685811",
-        "p_1779330690989",
-        "p_1779330703478",
-        "p_1779330899108",
-        "p_1779330902013",
-        "p_1779331022664",
-        "p_1779331029871",
-        "p_1779331249043",
-        "p_1779331252572",
-        "p_1779331447184",
-        "p_1779331452017",
-        "p_1779331461161",
-        "p_1779331707776",
-        "p_1779331714768",
-        "p_1779331719336",
-        "p_1779331875873",
-        "p_1779331881013",
-        "p_1779332105542",
-        "p_1779332115319",
-        "p_1779332441215",
-        "p_1779332447950",
-        "p_1779332640396",
-        "p_1779332645876",
-        "p_1779332654980",
-        "p_1779332754955",
-        "p_1779333084122",
-        "p_1779333090313",
-        "p_1779247340455",
-        "p_1779247346094",
-        "p_1779247352327",
-        "p_1779247360753",
-        "p_1779333246047",
-        "p_1779333252607",
-        "p_1779333357507",
-        "p_1779333363960"
-      ],
-      "tiers": []
-    },
-    "RB": {
-      "order": [
-        "p_1779061979323",
-        "p_1779159537002",
-        "p_1779159555674",
-        "p_1779062031499",
-        "p_1779159548267",
-        "p_1779062038313",
-        "p_1779062322561",
-        "p_1779075294847",
-        "p_1779075213071",
-        "p_1779074421786",
-        "p_1779074372694",
-        "p_1779062329546",
-        "p_1779075221100",
-        "p_1779075224757",
-        "p_1779062336738",
-        "p_1779235320806",
-        "p_1779151645431",
-        "p_1779151653780",
-        "p_1779245446783",
-        "p_1779245500850",
-        "p_1779245511202",
-        "p_1779245528209",
-        "p_1779245699094",
-        "p_1779245704441",
-        "p_1779245711960",
-        "p_1779245725080",
-        "p_1779245846508",
-        "p_1779245856892",
-        "p_1779245872597",
-        "p_1779245880845",
-        "p_1779246018265",
-        "p_1779246023121",
-        "p_1779246032281",
-        "p_1779246157650",
-        "p_1779246321334",
-        "p_1779246327599",
-        "p_1779246431632",
-        "p_1779246437256",
-        "p_1779246444152",
-        "p_1779246455305",
-        "p_1779246587627",
-        "p_1779246592569",
-        "p_1779246602610",
-        "p_1779246611930",
-        "p_1779246724735",
-        "p_1779246748582",
-        "p_1779246741856",
-        "p_1779246735287",
-        "p_1779246872186",
-        "p_1779246879768",
-        "p_1779246885097",
-        "p_1779246987530",
-        "p_1779246992889",
-        "p_1779246999427",
-        "p_1779330610650",
-        "p_1779330618323",
-        "p_1779330624923",
-        "p_1779330637356",
-        "p_1779330778672",
-        "p_1779330790623",
-        "p_1779330798944",
-        "p_1779330937500",
-        "p_1779330943262",
-        "p_1779330948695",
-        "p_1779331046880",
-        "p_1779331090783",
-        "p_1779331096244",
-        "p_1779331100912",
-        "p_1779331116564",
-        "p_1779331123995",
-        "p_1779331131284",
-        "p_1779331347534",
-        "p_1779331358006",
-        "p_1779331381254",
-        "p_1779331512641",
-        "p_1779331535274",
-        "p_1779331551965",
-        "p_1779331781505",
-        "p_1779331791927",
-        "p_1779331800011",
-        "p_1779331816176",
-        "p_1779331955441",
-        "p_1779331960610",
-        "p_1779331972154",
-        "p_1779332207272",
-        "p_1779332228650",
-        "p_1779332221217",
-        "p_1779332244930",
-        "p_1779332494240",
-        "p_1779332499592",
-        "p_1779332505296",
-        "p_1779332511599",
-        "p_1779332694681",
-        "p_1779332700845",
-        "p_1779332705957",
-        "p_1779332992407",
-        "p_1779332997041",
-        "p_1779333004200",
-        "p_1779333011529",
-        "p_1779333018898",
-        "p_1779247245469",
-        "p_1779247251293",
-        "p_1779247257069",
-        "p_1779247263671",
-        "p_1779333133276",
-        "p_1779333145181",
-        "p_1779333150580",
-        "p_1779333157011",
-        "p_1779333304473",
-        "p_1779333311840",
-        "p_1779333318553",
-        "p_1779333324177"
-      ],
-      "tiers": [
-        3,
-        5,
-        "p_1779062329546"
-      ]
-    },
-    "WR": {
-      "order": [
-        "p_1779157172544",
-        "p_1779062050126",
-        "p_1779157176168",
-        "p_1779062065292",
-        "p_1779157195730",
-        "p_1779062100075",
-        "p_1779062080289",
-        "p_1779062090547",
-        "p_1779062055121",
-        "p_1779247178044",
-        "p_1779151662394",
-        "p_1779151674733",
-        "p_1779075230093",
-        "p_1779075305742",
-        "p_1779075242663",
-        "p_1779075312336",
-        "p_1779075318208",
-        "p_1779075324040",
-        "p_1779062345202",
-        "p_1779062367986",
-        "p_1779062359690",
-        "p_1779062379738",
-        "p_1779062385171",
-        "p_1779074381299",
-        "p_1779074395364",
-        "p_1779074459111",
-        "p_1779074471461",
-        "p_1779074477981",
-        "p_1779074484792",
-        "p_1779075253318",
-        "p_1779155997783",
-        "p_1779156001713",
-        "p_1779245569116",
-        "p_1779245573859",
-        "p_1779245542459",
-        "p_1779245554027",
-        "p_1779245612309",
-        "p_1779245623484",
-        "p_1779245732360",
-        "p_1779245739049",
-        "p_1779245766538",
-        "p_1779245887549",
-        "p_1779245893959",
-        "p_1779245921158",
-        "p_1779245901614",
-        "p_1779245909734",
-        "p_1779246039921",
-        "p_1779246046278",
-        "p_1779246059523",
-        "p_1779246071539",
-        "p_1779246336952",
-        "p_1779246344720",
-        "p_1779246355191",
-        "p_1779246359182",
-        "p_1779246476313",
-        "p_1779246482001",
-        "p_1779246486960",
-        "p_1779246502562",
-        "p_1779246514888",
-        "p_1779246522450",
-        "p_1779246618572",
-        "p_1779246625092",
-        "p_1779246636076",
-        "p_1779246648814",
-        "p_1779246653581",
-        "p_1779246766511",
-        "p_1779246772149",
-        "p_1779246793573",
-        "p_1779246801720",
-        "p_1779246899097",
-        "p_1779246915249",
-        "p_1779246936234",
-        "p_1779246925498",
-        "p_1779247011721",
-        "p_1779247016777",
-        "p_1779247059034",
-        "p_1779247070625",
-        "p_1779247080768",
-        "p_1779330642498",
-        "p_1779330648988",
-        "p_1779330661316",
-        "p_1779330672755",
-        "p_1779330806822",
-        "p_1779330813065",
-        "p_1779330823481",
-        "p_1779330827584",
-        "p_1779330969983",
-        "p_1779330978063",
-        "p_1779331003752",
-        "p_1779331014513",
-        "p_1779331138995",
-        "p_1779331158993",
-        "p_1779331179914",
-        "p_1779331187782",
-        "p_1779331222915",
-        "p_1779331230298",
-        "p_1779331238963",
-        "p_1779331386305",
-        "p_1779331393047",
-        "p_1779331400552",
-        "p_1779331571899",
-        "p_1779331581261",
-        "p_1779331682480",
-        "p_1779331694592",
-        "p_1779331834870",
-        "p_1779331838760",
-        "p_1779331843311",
-        "p_1779331857583",
-        "p_1779331979129",
-        "p_1779332005939",
-        "p_1779332085244",
-        "p_1779332094981",
-        "p_1779332258354",
-        "p_1779332263474",
-        "p_1779332415605",
-        "p_1779332391429",
-        "p_1779332431984",
-        "p_1779332531593",
-        "p_1779332546457",
-        "p_1779332556490",
-        "p_1779332562938",
-        "p_1779332716857",
-        "p_1779332720850",
-        "p_1779332728211",
-        "p_1779332740763",
-        "p_1779332748825",
-        "p_1779333047468",
-        "p_1779333065162",
-        "p_1779333079523",
-        "p_1779247269235",
-        "p_1779247277702",
-        "p_1779247290028",
-        "p_1779247303734",
-        "p_1779247325398",
-        "p_1779333168350",
-        "p_1779333177461",
-        "p_1779333211581",
-        "p_1779333218405",
-        "p_1779333227015",
-        "p_1779333241856",
-        "p_1779333332939",
-        "p_1779333339609",
-        "p_1779333344466",
-        "p_1779333348186",
-        "p_1781062194848_ycq6"
-      ],
-      "tiers": [
-        "p_1779062050126",
-        "p_1779157176168",
-        "p_1779157195730",
-        "p_1779151662394"
-      ]
-    }
-  },
+  "rankingsState": {},
   "teamStatus": {
-    "Indianapolis Colts": "progress",
     "Buffalo Bills": "done",
-    "Miami Dolphins": "progress",
-    "New England Patriots": "progress",
-    "New York Jets": "progress",
-    "Baltimore Ravens": "progress",
-    "Cincinnati Bengals": "progress",
-    "Cleveland Browns": "progress",
+    "Miami Dolphins": "done",
+    "New England Patriots": "done",
+    "New York Jets": "done",
+    "Baltimore Ravens": "done",
+    "Cincinnati Bengals": "done",
+    "Cleveland Browns": "done",
     "Pittsburgh Steelers": "progress",
-    "Houston Texans": "progress",
-    "Jacksonville Jaguars": "progress",
-    "Tennessee Titans": "progress",
-    "Denver Broncos": "progress",
-    "Kansas City Chiefs": "progress",
-    "Las Vegas Raiders": "progress",
-    "Los Angeles Chargers": "progress",
-    "Minnesota Vikings": "done",
-    "Los Angeles Rams": "progress",
-    "Dallas Cowboys": "progress",
-    "Chicago Bears": "progress",
-    "New York Giants": "progress",
-    "Philadelphia Eagles": "progress",
-    "Washington Commanders": "progress",
-    "Detroit Lions": "progress",
-    "Green Bay Packers": "progress",
-    "Atlanta Falcons": "progress",
-    "Carolina Panthers": "progress",
-    "New Orleans Saints": "progress",
-    "Tampa Bay Buccaneers": "progress",
-    "Arizona Cardinals": "progress",
-    "San Francisco 49ers": "progress",
-    "Seattle Seahawks": "progress"
+    "Minnesota Vikings": "done"
   },
-  "colorOverrides": {
-    "Buffalo Bills": "#0033AD",
-    "Miami Dolphins": "#008e97",
-    "New England Patriots": "#002244",
-    "New York Jets": "#115740",
-    "Baltimore Ravens": "#241773",
-    "Cincinnati Bengals": "#fb4f14",
-    "Cleveland Browns": "#ff3c00",
-    "Pittsburgh Steelers": "#ffb612",
-    "Houston Texans": "#a71930",
-    "Indianapolis Colts": "#002c5f",
-    "Jacksonville Jaguars": "#006778",
-    "Tennessee Titans": "#4b92db",
-    "Denver Broncos": "#fb4f14",
-    "Kansas City Chiefs": "#e31837",
-    "Las Vegas Raiders": "#a5acaf",
-    "Los Angeles Chargers": "#0080c6",
-    "Dallas Cowboys": "#003594",
-    "New York Giants": "#0b2265",
-    "Philadelphia Eagles": "#004c54",
-    "Washington Commanders": "#5a1414",
-    "Chicago Bears": "#c83803",
-    "Detroit Lions": "#0076b6",
-    "Green Bay Packers": "#203731",
-    "Minnesota Vikings": "#4f2683",
-    "Atlanta Falcons": "#a71930",
-    "Carolina Panthers": "#0085ca",
-    "New Orleans Saints": "#d3bc8d",
-    "Tampa Bay Buccaneers": "#d50a0a",
-    "Arizona Cardinals": "#97233f",
-    "Los Angeles Rams": "#003594",
-    "San Francisco 49ers": "#aa0000",
-    "Seattle Seahawks": "#69be28"
-  },
+  "colorOverrides": {},
   "draftState": {
-    "leagues": [
-      {
-        "name": "Shako Sabers",
-        "numTeams": 10,
-        "myPick": 1,
-        "numRounds": 16,
-        "teamNames": [
-          "Alex",
-          "schulze",
-          "Kress",
-          "Max",
-          "Damon",
-          "Joey",
-          "Kreuser",
-          "titcomb",
-          "brent",
-          "jake"
-        ],
-        "picks": [],
-        "rosterSlots": [
-          "QB",
-          "RB",
-          "RB",
-          "WR",
-          "WR",
-          "TE",
-          "FLEX",
-          "K",
-          "D/ST",
-          "BN",
-          "BN",
-          "BN",
-          "BN",
-          "BN",
-          "BN",
-          "BN"
-        ]
-      },
-      {
-        "name": "Da Boys",
-        "numTeams": 12,
-        "myPick": 1,
-        "numRounds": 18,
-        "teamNames": [
-          "Team 1",
-          "Peter",
-          "paul",
-          "Team 4",
-          "Team 5",
-          "Team 6",
-          "Team 7",
-          "Team 8",
-          "Team 9",
-          "Team 10",
-          "Team 11",
-          "Team 12"
-        ],
-        "picks": [],
-        "rosterSlots": [
-          "QB",
-          "RB",
-          "RB",
-          "WR",
-          "WR",
-          "TE",
-          "FLEX",
-          "K",
-          "D/ST",
-          "BN",
-          "BN",
-          "BN",
-          "BN",
-          "BN",
-          "BN",
-          "BN",
-          "BN",
-          "BN"
-        ]
-      }
-    ],
-    "activeLeague": 1
+    "leagues": [],
+    "activeLeague": 0
   },
   "scoringPresets": [
     {
@@ -5309,45 +5729,29 @@
     }
   ],
   "activeScoringPreset": "0",
-  "colDisplay": {
-    "Total Plays": "Plays",
-    "Rush Plays": "RPlays",
-    "Pass Plays": "PPlays",
-    "Pass Attempts": "PAtt",
-    "Completions": "Comp",
-    "Gross Pass Yards": "GPYDS",
-    "Sack Yards": "SCKYDS",
-    "Pass Touchdowns": "PTD",
-    "Interceptions": "INT",
-    "Targets": "TGT",
-    "WR Targets": "WR TGT",
-    "TE Targets": "TE TGT",
-    "RB Targets": "RB TGT",
-    "Rush Yards": "RYDS",
-    "Rush Touchdowns": "RTD",
-    "Pass Play %": "PPlay%",
-    "Rush Play %": "RPlay%",
-    "Dead Plays": "Dead",
-    "Yards/Sack": "YDS/SCK",
-    "Net Pass Yards": "NPYDS",
-    "Target %": "TGT%",
-    "TE TGT %": "TE TGT%",
-    "Touchdown %": "TD%",
-    "Interception %": "INT%",
-    "Gross Yards": "GYDS",
-    "Net Yards": "NYDS",
-    "TOTAL Touchdowns": "TOTTD",
-    "Net Yards/Touchdown": "NY/TD",
-    "YPA": "YPA",
-    "COMP%": "COMP%",
-    "YPC": "YPC",
-    "Pass Play%": "PPlay%",
-    "Rush Play%": "RPlay%",
-    "Touchdown%": "TD%",
-    "Interception%": "Int%",
-    "Target%": "TGT%"
-  },
+  "colDisplay": {},
   "teamLocks": {
+    "ff_locks_New England Patriots": {
+      "totalPlays": true,
+      "passRate": true,
+      "sackYds": true,
+      "sacks": true,
+      "yardsPerSack": true,
+      "deadPassPlays": true,
+      "targets": true,
+      "passComp": true,
+      "passPlays": true,
+      "rushPlays": true,
+      "passAtt": true,
+      "passYds": true,
+      "passInt": true,
+      "wrTgt": true,
+      "teTgt": true,
+      "rbTgt": true,
+      "rushYds": true,
+      "passTD": true,
+      "rushTD": true
+    },
     "ff_locks_Buffalo Bills": {
       "totalPlays": true,
       "passRate": true,
@@ -5368,6 +5772,25 @@
       "teTgt": true,
       "wrTgt": true
     },
+    "ff_locks_Cleveland Browns": {
+      "totalPlays": true,
+      "passRate": true,
+      "passPlays": true,
+      "rushPlays": true,
+      "deadPassPlays": true,
+      "sacks": true,
+      "sackYds": true,
+      "passTD": true,
+      "targets": true,
+      "passComp": true,
+      "passInt": true,
+      "wrTgt": true,
+      "teTgt": true,
+      "rbTgt": true,
+      "rushYds": true,
+      "rushTD": true,
+      "passYds": true
+    },
     "ff_locks_Seattle Seahawks": {
       "totalPlays": true,
       "passPlays": true,
@@ -5377,6 +5800,105 @@
       "deadPassPlays": true,
       "targets": true,
       "passAtt": true
+    },
+    "ff_locks_Miami Dolphins": {
+      "totalPlays": true,
+      "passPlays": true,
+      "rushPlays": true,
+      "sacks": true,
+      "passAtt": true,
+      "sackYds": true,
+      "deadPassPlays": true,
+      "passYds": true,
+      "passInt": true,
+      "passTD": true,
+      "targets": true,
+      "rbTgt": true,
+      "rushYds": true,
+      "rushTD": true,
+      "passRate": true,
+      "teTgt": true,
+      "wrTgt": true
+    },
+    "ff_locks_Pittsburgh Steelers": {
+      "totalPlays": true,
+      "passRate": true,
+      "passPlays": true,
+      "rushPlays": true,
+      "sacks": true,
+      "passAtt": true,
+      "deadPassPlays": true,
+      "targets": true,
+      "passComp": true,
+      "passYds": true,
+      "sackYds": true,
+      "passInt": true,
+      "rbTgt": true,
+      "teTgt": true,
+      "wrTgt": true,
+      "rushTD": true,
+      "passTD": true
+    },
+    "ff_locks_New York Jets": {
+      "totalPlays": true,
+      "passRate": true,
+      "passPlays": true,
+      "rushPlays": true,
+      "sackYds": true,
+      "sacks": true,
+      "passAtt": true,
+      "deadPassPlays": true,
+      "targets": true,
+      "passComp": true,
+      "passYds": true,
+      "passTD": true,
+      "passInt": true,
+      "wrTgt": true,
+      "teTgt": true,
+      "rbTgt": true,
+      "rushTD": true,
+      "rushYds": true
+    },
+    "ff_locks_Baltimore Ravens": {
+      "totalPlays": true,
+      "passRate": true,
+      "rushPlays": true,
+      "passPlays": true,
+      "sacks": true,
+      "passAtt": true,
+      "deadPassPlays": true,
+      "targets": true,
+      "passComp": true,
+      "passYds": true,
+      "sackYds": true,
+      "passTD": true,
+      "passInt": true,
+      "rbTgt": true,
+      "teTgt": true,
+      "rushYds": true,
+      "rushTD": true,
+      "wrTgt": true
+    },
+    "ff_locks_Cincinnati Bengals": {
+      "passRate": true,
+      "totalPlays": true,
+      "passPlays": true,
+      "rushPlays": true,
+      "sacks": true,
+      "passAtt": true,
+      "deadPassPlays": true,
+      "passComp": true,
+      "passYds": true,
+      "sackYds": true,
+      "yardsPerSack": true,
+      "passInt": true,
+      "rbTgt": true,
+      "teTgt": true,
+      "targets": true,
+      "wrTgt": true,
+      "rushTD": true,
+      "rushYds": true,
+      "passTD": true
     },
     "ff_locks_Minnesota Vikings": {
       "totalPlays": true,

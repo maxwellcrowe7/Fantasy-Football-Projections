@@ -427,8 +427,8 @@
   }
   .tgt-share-pill {
     display: flex; align-items: center;
-    padding: 4px 10px; border-radius: 4px; border: 1px solid var(--border);
-    background: var(--bg-2); gap: 10px; min-width: 120px;
+    padding: 3px 7px; border-radius: 4px; border: 1px solid var(--border);
+    background: var(--bg-2); gap: 6px; min-width: 0;
   }
   .tgt-share-pill.done { background: rgba(58,125,10,0.08); border-color: var(--accent); }
   .tgt-share-pill.done .tgt-share-rem { color: var(--accent); }
@@ -437,7 +437,7 @@
   .tgt-share-pos.pos-te { color: #c9a800; }
   .tgt-share-pos.pos-rb { color: #3a9a5c; }
   .tgt-share-nums { color: var(--text-3); font-size: 10px; }
-  .tgt-share-rem { font-weight: 700; font-size: 11px; min-width: 60px; text-align: right; padding-right: 4px; }
+  .tgt-share-rem { font-weight: 700; font-size: 11px; min-width: 44px; text-align: right; padding-right: 2px; }
   .tgt-share-rem.over { color: #e05252; }
   .tgt-share-rem.under { color: var(--text-3); }
   .tgt-share-rem.done { color: var(--accent); }

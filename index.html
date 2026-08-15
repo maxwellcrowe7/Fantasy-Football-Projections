@@ -19,9 +19,15 @@
     <input id="login-email" type="email" placeholder="your@email.com"
       style="width:100%; box-sizing:border-box; background:var(--bg,#eceae4); border:1px solid var(--border,#d0cdc6); border-radius:6px; padding:10px 12px; font-size:14px; color:var(--text,#1a1a18); margin-bottom:10px; outline:none;"
       onkeydown="if(event.key==='Enter') document.getElementById('login-password').focus()">
-    <input id="login-password" type="password" placeholder="password"
-      style="width:100%; box-sizing:border-box; background:var(--bg,#eceae4); border:1px solid var(--border,#d0cdc6); border-radius:6px; padding:10px 12px; font-size:14px; color:var(--text,#1a1a18); margin-bottom:14px; outline:none;"
-      onkeydown="if(event.key==='Enter') authSubmit()">
+    <div style="position:relative;margin-bottom:14px;">
+      <input id="login-password" type="password" placeholder="password"
+        style="width:100%; box-sizing:border-box; background:var(--bg,#eceae4); border:1px solid var(--border,#d0cdc6); border-radius:6px; padding:10px 36px 10px 12px; font-size:14px; color:var(--text,#1a1a18); outline:none;"
+        onkeydown="if(event.key==='Enter') authSubmit()">
+      <button type="button" id="pw-eye-btn" onclick="togglePwVis()" title="Show/hide password"
+        style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text-3,#96948e);padding:2px;line-height:1;display:flex;align-items:center;">
+        <svg id="pw-eye-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+      </button>
+    </div>
     <button onclick="authSubmit()"
       style="width:100%; background:var(--blue,#3b82f6); color:#fff; border:none; border-radius:6px; padding:10px; font-size:14px; font-weight:600; cursor:pointer; margin-bottom:10px;">
       Sign In
@@ -111,12 +117,12 @@
       <div id="auth-dropdown" style="display:none;position:absolute;right:0;top:calc(100% + 10px);background:var(--bg-2,#fff);border:1px solid var(--border,#d0cdc6);border-radius:8px;padding:8px;min-width:220px;z-index:9990;box-shadow:0 4px 12px rgba(0,0,0,0.12);">
         <div id="auth-dropdown-email" style="font-size:11px;color:var(--text-3,#96948e);padding:6px 8px 10px;border-bottom:1px solid var(--border,#d0cdc6);margin-bottom:6px;font-family:var(--font-mono);"></div>
         <div style="padding:6px 8px 4px;display:flex;align-items:center;gap:6px;">
-          <input id="display-name-input" type="text" placeholder="Initials" maxlength="20"
+          <input id="display-name-input" type="text" placeholder="Name" maxlength="20"
             style="flex:1;background:var(--bg,#eceae4);border:1px solid var(--border,#d0cdc6);border-radius:4px;padding:5px 8px;font-size:12px;color:var(--text,#1a1a18);outline:none;"
             onkeydown="if(event.key==='Enter') saveDisplayName()">
           <button onclick="saveDisplayName()" style="background:var(--blue,#3b82f6);color:#fff;border:none;border-radius:4px;padding:5px 8px;font-size:11px;font-weight:600;cursor:pointer;">Save</button>
         </div>
-        <div style="font-size:10px;color:var(--text-3,#96948e);padding:0 8px 8px;font-family:var(--font-mono);">Sets your initials in the nav</div>
+        <div style="font-size:10px;color:var(--text-3,#96948e);padding:0 8px 8px;font-family:var(--font-mono);">Shows in nav & your draft board slot</div>
         <div style="border-top:1px solid var(--border,#d0cdc6);margin:4px 0;"></div>
         <button onclick="showChangePassword()" style="width:100%;text-align:left;background:none;border:none;color:var(--text,#1a1a18);padding:7px 8px;font-size:13px;cursor:pointer;border-radius:4px;" onmouseover="this.style.background='var(--bg,#eceae4)'" onmouseout="this.style.background='none'">Change password</button>
         <button onclick="confirmSignOut()" style="width:100%;text-align:left;background:none;border:none;color:var(--red,#ef4444);padding:7px 8px;font-size:13px;cursor:pointer;border-radius:4px;" onmouseover="this.style.background='var(--bg,#eceae4)'" onmouseout="this.style.background='none'">Sign out</button>

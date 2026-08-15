@@ -257,6 +257,8 @@ function buildFullPayload() {
     activeScoringPreset: localStorage.getItem('ff_active_scoring_preset') || '0',
     colDisplay:          JSON.parse(localStorage.getItem('ff_col_display')          || '{}'),
     teamLocks,
+    rookieTags:          JSON.parse(localStorage.getItem('ff_rookie_tags')          || '[]'),
+    hiddenPlayers:       JSON.parse(localStorage.getItem('ff_hidden_players')       || '[]'),
   };
 }
 
@@ -287,6 +289,14 @@ function applyFullPayload(payload) {
     Object.entries(payload.teamLocks).forEach(([k, v]) => {
       try { localStorage.setItem(k, JSON.stringify(v)); } catch(e) {}
     });
+  }
+  if (payload.rookieTags) {
+    localStorage.setItem('ff_rookie_tags', JSON.stringify(payload.rookieTags));
+    rookieTags = new Set(payload.rookieTags);
+  }
+  if (payload.hiddenPlayers) {
+    localStorage.setItem('ff_hidden_players', JSON.stringify(payload.hiddenPlayers));
+    hiddenPlayers = new Set(payload.hiddenPlayers);
   }
   return true;
 }
@@ -328,6 +338,18 @@ async function pushHistToSupabase() {
 }
 
 let _authMode = 'signin'; // 'signin' | 'signup'
+function togglePwVis() {
+  const inp = document.getElementById('login-password');
+  const icon = document.getElementById('pw-eye-icon');
+  if (inp.type === 'password') {
+    inp.type = 'text';
+    icon.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>';
+  } else {
+    inp.type = 'password';
+    icon.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+  }
+}
+
 function toggleAuthMode() {
   _authMode = _authMode === 'signin' ? 'signup' : 'signin';
   const isSignUp = _authMode === 'signup';
@@ -567,12 +589,33 @@ async function removeShare(id) {
   loadShares();
 }
 
+function applySharedPayload(payload) {
+  if (!payload.state) return false;
+  state = payload.state;
+  if (payload.selectedTeam !== undefined) selectedTeam = payload.selectedTeam;
+  if (payload.rankingsState) {
+    localStorage.setItem('ff_rankings_v1', JSON.stringify(payload.rankingsState));
+    rankingsState = payload.rankingsState;
+  }
+  if (payload.teamStatus)     localStorage.setItem('ff_team_status',     JSON.stringify(payload.teamStatus));
+  if (payload.colorOverrides) localStorage.setItem('ff_color_overrides', JSON.stringify(payload.colorOverrides));
+  if (payload.scoringPresets) {
+    localStorage.setItem('ff_scoring_presets', JSON.stringify(payload.scoringPresets));
+    scoringPresets = payload.scoringPresets;
+  }
+  if (payload.activeScoringPreset !== undefined) {
+    localStorage.setItem('ff_active_scoring_preset', payload.activeScoringPreset);
+    activeScoringPreset = parseInt(payload.activeScoringPreset);
+  }
+  return true;
+}
+
 async function viewSharedProjections(ownerId, ownerEmail) {
   closeSharePanel();
   const { data } = await sb.from('app_state').select('data').eq('user_id', ownerId).eq('app', SB_APP).maybeSingle();
   if (!data?.data) { alert(`No projections found for ${ownerEmail}.`); return; }
   viewingUser = { userId: ownerId, email: ownerEmail };
-  applyFullPayload(data.data);
+  applySharedPayload(data.data);
   document.getElementById('app-view-banner').style.display = 'flex';
   document.getElementById('view-banner-email').textContent = ownerEmail;
   document.body.classList.add('viewing-mode');
@@ -610,6 +653,49 @@ function loadState() {
 
 let state = {};
 let selectedTeam = null;
+
+// ─── Hidden players (unranked from rankings pool) ───
+let hiddenPlayers = new Set(JSON.parse(localStorage.getItem('ff_hidden_players') || '[]'));
+function saveHiddenPlayers() {
+  localStorage.setItem('ff_hidden_players', JSON.stringify([...hiddenPlayers]));
+  sbSave();
+}
+function hidePlayer(playerId) {
+  hiddenPlayers.add(playerId);
+  saveHiddenPlayers();
+  renderRankings();
+}
+function unhidePlayer(playerId) {
+  hiddenPlayers.delete(playerId);
+  // Move to bottom of current rankings order so they don't pop into a random spot
+  const pos = rankPos;
+  if (!rankingsState[pos]) rankingsState[pos] = { order: [], tiers: [] };
+  const order = rankingsState[pos].order || [];
+  if (!order.includes(playerId)) order.push(playerId);
+  else {
+    const idx = order.indexOf(playerId);
+    order.splice(idx, 1);
+    order.push(playerId);
+  }
+  rankingsState[pos].order = order;
+  saveHiddenPlayers();
+  saveRankingsState();
+  renderRankings();
+}
+let showHidden = false;
+
+// ─── Rookie tags ───
+let rookieTags = new Set(JSON.parse(localStorage.getItem('ff_rookie_tags') || '[]'));
+function saveRookieTags() {
+  localStorage.setItem('ff_rookie_tags', JSON.stringify([...rookieTags]));
+  sbSave();
+}
+function toggleRookieTag(playerId) {
+  if (rookieTags.has(playerId)) rookieTags.delete(playerId);
+  else rookieTags.add(playerId);
+  saveRookieTags();
+  renderMain();
+}
 
 // ─── Undo history ───
 const MAX_UNDO = 30;
@@ -1705,17 +1791,17 @@ function calcDerived(p, data) {
 
   if (att > 0) {
     d.compPct  = (comp / att * 100).toFixed(1);
-    d.ypa      = (yds  / att).toFixed(1);
+    d.ypa      = (yds  / att).toFixed(2);
     d.tdPct    = (td   / att * 100).toFixed(1);
     d.intPct   = (int_ / att * 100).toFixed(1);
   }
-  if (car > 0)           d.ypc      = (rYds / car).toFixed(1);
-  if (car > 0)           d.ypc_rush = (rYds / car).toFixed(1);
+  if (car > 0)           d.ypc      = (rYds / car).toFixed(2);
+  if (car > 0)           d.ypc_rush = (rYds / car).toFixed(2);
   if (teamRushAtt > 0)   d.rushShare= (car / teamRushAtt * 100).toFixed(1);
   if (teamPassAtt > 0)   d.tgtShare = (tgt / teamPassAtt * 100).toFixed(1);
   if (tgt > 0)           d.catchPct = (rec / tgt * 100).toFixed(1);
-  if (tgt > 0)           d.ypr      = (rYd2 / tgt).toFixed(1);
-  if (rec > 0)           d.ypc_rec  = (rYd2 / rec).toFixed(1);
+  if (tgt > 0)           d.ypr      = (rYd2 / tgt).toFixed(2);
+  if (rec > 0)           d.ypc_rec  = (rYd2 / rec).toFixed(2);
   return d;
 }
 
@@ -1772,7 +1858,8 @@ function buildPosTotal(data, pos, cols, grpCls) {
       return `<td class="pos-total-cell derived">${v}${suffix}</td>`;
     }
     const v = sums[c.key];
-    return `<td class="pos-total-cell">${v !== undefined ? Math.round(v) : "—"}</td>`;
+    const vDisp = v === undefined ? "—" : (v % 1 === 0 ? Math.round(v) : parseFloat(v.toFixed(1)));
+    return `<td class="pos-total-cell">${vDisp}</td>`;
   }).join("");
 
   return `<tr class="pos-total-row ${grpCls}">
@@ -1814,10 +1901,13 @@ function renderPlayerRow(p, data, cols) {
     </td>`;
   }).join("");
 
+  const rookieDot = !p.misc && rookieTags.has(p.id)
+    ? `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#9333ea;flex-shrink:0;"></span>`
+    : '';
   const nameCell = p.misc
     ? `<td><span class="misc-name">${p.name}</span></td>`
-    : `<td><input type="text" value="${p.name}" placeholder="player name" spellcheck="false"
-        oninput="onPlayerName('${p.id}',this.value)"></td>`;
+    : `<td><div style="display:flex;align-items:center;gap:4px;">${rookieDot}<input type="text" value="${p.name}" placeholder="player name" spellcheck="false" style="flex:1;min-width:0;"
+        oninput="onPlayerName('${p.id}',this.value)"></div></td>`;
 
   const posCell = p.misc
     ? `<td class="col-pos-cell"><span class="misc-pos">${p.pos}</span></td>`
@@ -1886,7 +1976,8 @@ function buildFooter(data) {
   const totalCells = cols.map(c => {
     if (c.derived || c.key === "games") return `<td></td>`;
     const v = sums[c.key];
-    return `<td data-total="${c.key}">${v > 0 ? Math.round(v) : ""}</td>`;
+    const vFmt = v > 0 ? (v % 1 === 0 ? Math.round(v) : parseFloat(v.toFixed(1))) : "";
+    return `<td data-total="${c.key}">${vFmt}</td>`;
   }).join("");
 
   const deltaCells = cols.map(c => {
@@ -2308,6 +2399,19 @@ function showTradeMenu(e, playerId) {
     list.appendChild(item);
   });
   menu.appendChild(list);
+
+  const sep = document.createElement('div');
+  sep.style.cssText = 'border-top:1px solid var(--border,#d0cdc6);margin:4px 0;';
+  menu.appendChild(sep);
+
+  const rookieItem = document.createElement('div');
+  rookieItem.className = 'trade-ctx-item';
+  const isRookie = rookieTags.has(playerId);
+  rookieItem.innerHTML = (isRookie ? '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#9333ea;margin-right:6px;vertical-align:middle;"></span>Remove rookie tag' : '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#9333ea;margin-right:6px;vertical-align:middle;"></span>Rookie tag');
+  rookieItem.style.color = '#9333ea';
+  rookieItem.onclick = () => { menu.remove(); toggleRookieTag(playerId); };
+  menu.appendChild(rookieItem);
+
   document.body.appendChild(menu);
 
   const mh = Math.min(300, allTeams.length * 28 + 36);
@@ -3280,15 +3384,28 @@ function saveRankingsState() {
 let rankingsState = getRankingsState();
 // rankingsState[pos] = { order: [id, id, ...], tiers: [afterIndex, afterIndex, ...] }
 
+function defaultRankOrder(players) {
+  return [...players].sort((a, b) => parseFloat(calcFpts(b).fpts || 0) - parseFloat(calcFpts(a).fpts || 0));
+}
+
 function getRankOrder(pos, players) {
   const rs = rankingsState[pos];
-  if (!rs || !rs.order) return players;
+  if (!rs || !rs.order || rs.order.length === 0) return defaultRankOrder(players);
   const idMap = {};
   players.forEach(p => { idMap[p.id] = p; });
   const ordered = rs.order.map(id => idMap[id]).filter(Boolean);
   const ranked = new Set(rs.order);
+  // New players not yet in the ranked list go to the bottom
   players.forEach(p => { if (!ranked.has(p.id)) ordered.push(p); });
   return ordered;
+}
+
+function resetRankings(pos) {
+  if (!rankingsState[pos]) rankingsState[pos] = {};
+  rankingsState[pos].order = [];
+  rankingsState[pos].tiers = [];
+  saveRankingsState();
+  renderRankings();
 }
 
 function getTiers(pos) {
@@ -3311,6 +3428,24 @@ function setTiers(pos, tiers) {
 function renderRankings() {
   const content = document.getElementById("rankings-content");
   const players = getPlayersForPos(rankPos).map(enrichPlayer);
+
+  // Show/hide reset button based on view mode
+  let resetBtn = document.getElementById('rankings-reset-btn');
+  if (rankView === 'rankings') {
+    if (!resetBtn) {
+      resetBtn = document.createElement('button');
+      resetBtn.id = 'rankings-reset-btn';
+      resetBtn.textContent = 'Reset';
+      resetBtn.title = 'Reset to default Fpts order';
+      resetBtn.style.cssText = 'background:none;border:1px solid var(--border-2);border-radius:4px;padding:4px 10px;font-size:11px;color:var(--text-3);cursor:pointer;';
+      resetBtn.onclick = () => resetRankings(rankPos);
+      const selector = document.getElementById('scoring-preset-selector');
+      if (selector) selector.parentNode.insertBefore(resetBtn, selector);
+    }
+    resetBtn.style.display = '';
+  } else if (resetBtn) {
+    resetBtn.style.display = 'none';
+  }
 
   if (players.length === 0) {
     content.innerHTML = `<div class="no-players">No ${rankPos}s found — add players in the Projections page first.</div>`;
@@ -3359,7 +3494,8 @@ function renderStatsView(content, players) {
       if (v === null || v === undefined || v === "") return `<td class="empty">—</td>`;
       const isFpts = c.key === "fpts" || c.key === "fptsPerGame";
       const isPct = c.key === "tgtShare" || c.key === "compPct" || c.key === "catchPct" || c.key === "tdPct" || c.key === "intPct" || c.key === "rushShare";
-      const disp = isFpts ? parseFloat(v).toFixed(1) : isPct ? `${parseFloat(v).toFixed(1)}%` : Math.round(parseFloat(v));
+      const isDecimal = ['ypa','ypc','ypc_rush','ypr','ypc_rec'].includes(c.key);
+      const disp = isFpts ? parseFloat(v).toFixed(1) : isPct ? `${parseFloat(v).toFixed(1)}%` : isDecimal ? parseFloat(v).toFixed(2) : Math.round(parseFloat(v));
       return `<td${isFpts ? ' style="font-weight:600;color:var(--accent);"' : ""}>${disp}</td>`;
     }).join("");
     const short = p.team.replace(/^.+ /, "");
@@ -3387,7 +3523,11 @@ function sortStats(col) {
 // ─── Rankings view ───
 
 function renderRankingsView(content, players) {
-  const ordered = getRankOrder(rankPos, players);
+  // Split into visible and hidden
+  const visiblePlayers = players.filter(p => !hiddenPlayers.has(p.id));
+  const hiddenPlayerList = players.filter(p => hiddenPlayers.has(p.id));
+
+  const ordered = getRankOrder(rankPos, visiblePlayers);
   const tierIds = getTiers(rankPos); // player IDs that start a new tier
   const isSkill = ["RB","WR","TE"].includes(rankPos);
   const cols = (rankPos === "QB" && qbRecMode) ? QB_REC_STAT_COLS
@@ -3435,35 +3575,83 @@ function renderRankingsView(content, players) {
       const v = statsWithFpts[c.key];
       const isFpts = c.key === "fpts" || c.key === "fptsPerGame";
       const isPct = ["tgtShare","compPct","catchPct","tdPct","intPct","rushShare"].includes(c.key);
+      const isDecimal = ['ypa','ypc','ypc_rush','ypr','ypc_rec'].includes(c.key);
       const disp = (v === null || v === undefined || v === "") ? "—" :
         isFpts ? parseFloat(v).toFixed(1) :
-        isPct ? `${parseFloat(v).toFixed(1)}%` : Math.round(parseFloat(v));
+        isPct ? `${parseFloat(v).toFixed(1)}%` :
+        isDecimal ? parseFloat(v).toFixed(2) : Math.round(parseFloat(v));
       const muted = disp === "—" ? "color:var(--text-3);" : "";
       const accent = isFpts ? "color:var(--accent);font-weight:500;" : "";
       return `<div class="rank-stat"><div class="rank-stat-val" style="${muted}${accent}">${disp}</div></div>`;
     }).join("");
 
     const short = p.team.replace(/^.+ /, "");
+    const teamClr = (TEAM_COLORS[p.team] || {}).border || '#888';
+    const rookieDot = rookieTags.has(p.id) ? `<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#9333ea;margin-left:4px;flex-shrink:0;vertical-align:middle;"></span>` : '';
     html += `<div class="rank-row${isTierLeader ? ' tier-leader' : ''}" data-player-idx="${i}" data-player-id="${p.id}"
       draggable="true"
       ondragstart="onPlayerDragStart(event,${i})"
       ondragover="onDragOver(event,this,${i})"
       ondragleave="onDragLeave(event)"
       ondrop="onDrop(event,'player',${i})"
-      ondragend="onDragEnd(event)">
+      ondragend="onDragEnd(event)"
+      oncontextmenu="showRankCtxMenu(event,'${p.id}')">
       <span class="rank-num">${i + 1}</span>
-      <div style="flex:0 0 12%;min-width:0;overflow:hidden;"><div class="rank-name">${p.name}</div></div>
-      <span class="rank-team">${short}</span>
+      <div style="flex:0 0 12%;min-width:0;overflow:hidden;"><div class="rank-name">${p.name}${rookieDot}</div></div>
+      <span class="rank-team" style="background:${teamClr}22;color:${teamClr};border:1px solid ${teamClr}55;border-radius:3px;padding:1px 5px;font-size:9px;font-weight:700;letter-spacing:0.04em;white-space:nowrap;">${short}</span>
       <div class="rank-stats">${statCells}</div>
     </div>`;
   });
 
+  // Hidden players section
+  let hiddenSection = '';
+  if (hiddenPlayerList.length > 0) {
+    hiddenSection = `<div style="padding:8px 10px 0;">
+      <button class="add-player-btn" onclick="showHidden=!showHidden;renderRankings()">
+        ${showHidden ? '▾' : '▸'} ${hiddenPlayerList.length} hidden player${hiddenPlayerList.length !== 1 ? 's' : ''}
+      </button>
+    </div>`;
+    if (showHidden) {
+      hiddenSection += `<div style="padding:4px 10px 0;">`;
+      hiddenPlayerList.forEach(p => {
+        const clr = (TEAM_COLORS[p.team] || {}).border || '#888';
+        const short = p.team.replace(/^.+ /, '');
+        hiddenSection += `<div style="display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:4px;opacity:0.6;font-size:12px;">
+          <span style="flex:1;color:var(--text-2);">${p.name}</span>
+          <span style="background:${clr}22;color:${clr};border:1px solid ${clr}55;border-radius:3px;padding:1px 5px;font-size:9px;font-weight:700;">${short}</span>
+          <button class="add-player-btn" onclick="unhidePlayer('${p.id}')" style="font-size:10px;padding:2px 8px;">Re-rank</button>
+        </div>`;
+      });
+      hiddenSection += `</div>`;
+    }
+  }
+
   html += `</div>
     <div style="padding:12px 10px 0;">
       <button class="add-player-btn" onclick="addTierAtEnd()">+ add tier break</button>
-    </div>`;
+    </div>${hiddenSection}`;
 
   content.innerHTML = html;
+}
+
+function showRankCtxMenu(e, playerId) {
+  e.preventDefault();
+  e.stopPropagation();
+  document.querySelectorAll('.rank-ctx-menu').forEach(m => m.remove());
+  const menu = document.createElement('div');
+  menu.className = 'rank-ctx-menu trade-ctx-menu';
+  const hideItem = document.createElement('div');
+  hideItem.className = 'trade-ctx-item';
+  hideItem.textContent = 'Hide player';
+  hideItem.style.color = 'var(--text-2)';
+  hideItem.onclick = () => { menu.remove(); hidePlayer(playerId); };
+  menu.appendChild(hideItem);
+  document.body.appendChild(menu);
+  const mw = 140;
+  menu.style.left = (e.clientX + mw > window.innerWidth ? e.clientX - mw : e.clientX) + 'px';
+  menu.style.top = e.clientY + 'px';
+  const close = ev => { if (!menu.contains(ev.target)) { menu.remove(); document.removeEventListener('mousedown', close); } };
+  setTimeout(() => document.addEventListener('mousedown', close), 0);
 }
 
 function addTierAtEnd() {
@@ -4741,29 +4929,6 @@ function showColCtxMenu(e, colOrGroup, isSliver) {
     hideItem.onclick = () => { hiddenDataCols.add(col); localStorage.setItem('ff_hidden_data_cols', JSON.stringify([...hiddenDataCols])); menu.remove(); renderDataTable(); };
     menu.appendChild(hideItem);
 
-    const isValidated = colHighlights[col] === 'validated';
-    const validItem = document.createElement('div');
-    validItem.textContent = isValidated ? '✓ Remove validated' : '✓ Mark as validated';
-    validItem.style.color = isValidated ? 'var(--text-3)' : 'rgb(80,180,100)';
-    validItem.onclick = () => {
-      colHighlights[col] = isValidated ? null : 'validated';
-      if (!colHighlights[col]) delete colHighlights[col];
-      localStorage.setItem('ff_col_highlights', JSON.stringify(colHighlights));
-      menu.remove(); updateColHighlightClass(col);
-    };
-    menu.appendChild(validItem);
-
-    const isDerived = colHighlights[col] === 'derived';
-    const derivedItem = document.createElement('div');
-    derivedItem.textContent = isDerived ? '◆ Remove verified derived' : '◆ Mark as verified derived';
-    derivedItem.style.color = isDerived ? 'var(--text-3)' : 'rgb(200,160,30)';
-    derivedItem.onclick = () => {
-      colHighlights[col] = isDerived ? null : 'derived';
-      if (!colHighlights[col]) delete colHighlights[col];
-      localStorage.setItem('ff_col_highlights', JSON.stringify(colHighlights));
-      menu.remove(); updateColHighlightClass(col);
-    };
-    menu.appendChild(derivedItem);
   } else {
     const group = Array.isArray(colOrGroup) ? colOrGroup : [colOrGroup];
     group.forEach(col => {
@@ -5390,10 +5555,12 @@ function renderDraftPool(league, onClockPick, searchQuery) {
       const displayName = formatInitialLast(p.name);
       const fptsDisp = isNaN(p.fpts) ? '—' : p.fpts.toFixed(0);
       const safeId = p.id.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+      const dotColor = (TEAM_COLORS[p.team] || {}).border || '#888';
+      const rookieTag = rookieTags.has(p.id) ? '<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#9333ea;margin-left:3px;flex-shrink:0;vertical-align:middle;"></span>' : '';
       colHtml += '<div class="draft-player-row' + (isDrafted ? ' drafted' : '') + '" data-player-id="' + p.id + '" data-name="' + p.name.replace(/"/g,'&quot;') + '"' +
         (isDrafted ? ' onclick="highlightBoardPick(this)" oncontextmenu="draftCtxFromEl(event,this)" title="Click to locate on board"' :
           (canDraft ? ' onclick="draftPlayer(\'' + safeId + '\')" title="Draft ' + p.name + '"' : '')) + '>' +
-        '<div class="draft-player-name">' + displayName + '</div>' +
+        '<div class="draft-player-name"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:' + dotColor + ';margin-right:5px;flex-shrink:0;"></span>' + displayName + rookieTag + '</div>' +
         '<div class="draft-player-meta"><span>' + short + '</span><span>' + fptsDisp + '</span></div>' +
         '</div>';
     });
@@ -5434,13 +5601,15 @@ function renderDraftBoard(league, pickOrder, currentPickIdx, onClockPick) {
   let html = '<table class="draft-board"><thead><tr><th class="round-label-th"></th>';
   for (let t = 0; t < league.numTeams; t++) {
     const isMine = t === league.myPick - 1;
-    html += '<th class="' + (isMine ? 'my-team-col' : '') + '" ondblclick="startTeamNameEdit(' + t + ', this, event)" title="Double-click to rename">' + (league.teamNames[t] || 'Team ' + (t+1)) + '</th>';
+    const displayNameFallback = isMine ? (localStorage.getItem('ff_display_name') || 'Team ' + (t+1)) : 'Team ' + (t+1);
+    html += '<th class="' + (isMine ? 'my-team-col' : '') + '" ondblclick="startTeamNameEdit(' + t + ', this, event)" title="Double-click to rename">' + (league.teamNames[t] || displayNameFallback) + '</th>';
   }
   html += '</tr></thead><tbody>';
 
   for (let r = 0; r < league.numRounds; r++) {
     const ltr = r % 2 === 0;
-    html += '<tr><td class="round-label">R' + (r+1) + '</td>';
+    const dirArrow = ltr ? '→' : '←';
+    html += '<tr><td class="round-label">R' + (r+1) + '<span style="display:block;font-size:9px;color:var(--text-3);line-height:1;margin-top:2px;">' + dirArrow + '</span></td>';
     for (let col = 0; col < league.numTeams; col++) {
       const teamIdx = ltr ? col : (league.numTeams - 1 - col);
       const globalIdx = r * league.numTeams + (ltr ? col : (league.numTeams - 1 - col));
