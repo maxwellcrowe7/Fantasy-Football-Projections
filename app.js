@@ -3950,7 +3950,7 @@ function renderRankingsView(content, players) {
     const teamClr = (TEAM_COLORS[teamName] || {}).border || '#888';
     const rookieDot = (!isDST && !isK && rookieTags.has(p.id)) ? `<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#9333ea;margin-left:4px;flex-shrink:0;vertical-align:middle;"></span>` : '';
     const badgeStyle = `background:${teamClr}22;color:${teamClr};border:1px solid ${teamClr}55;border-radius:3px;padding:3px 4px;font-size:10px;font-weight:700;letter-spacing:0.04em;white-space:nowrap;text-align:center;display:inline-block;min-width:34px;`;
-    const dstBadgeStyle = `background:${teamClr}22;color:${teamClr};border:1px solid ${teamClr}55;border-radius:3px;padding:3px 6px;font-size:10px;font-weight:700;letter-spacing:0.04em;white-space:nowrap;text-align:center;display:inline-block;width:90px;box-sizing:border-box;`;
+    const dstBadgeStyle = `background:${teamClr}22;color:${teamClr};border:1px solid ${teamClr}55;border-radius:3px;padding:3px 6px;font-size:10px;font-weight:700;letter-spacing:0.04em;white-space:nowrap;text-align:center;display:inline-block;width:100px;box-sizing:border-box;`;
     const teamBadge = isDST
       ? `<span style="${dstBadgeStyle}">${short}</span>`
       : `<span class="rank-team" style="display:flex;align-items:center;justify-content:center;"><span style="${badgeStyle}">${short}</span></span>`;
