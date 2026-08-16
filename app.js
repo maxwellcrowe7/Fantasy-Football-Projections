@@ -1959,7 +1959,7 @@ function renderPlayerRow(p, data, cols) {
   const hasRookieDot = !p.misc && rookieTags.has(p.id);
   const nameCell = p.misc
     ? `<td><span class="misc-name">${p.name}</span></td>`
-    : `<td><div style="display:flex;align-items:center;gap:3px;"><input type="text" value="${p.name}" size="${Math.max(1, p.name.length)}" placeholder="player name" spellcheck="false" style="flex:0 1 auto;min-width:0;" oninput="onPlayerName('${p.id}',this.value);this.size=Math.max(1,this.value.length)">${hasRookieDot ? '<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#9333ea;flex-shrink:0;"></span>' : ''}<span style="flex:1;"></span></div></td>`;
+    : `<td><div style="display:flex;align-items:center;gap:4px;"><span contenteditable="true" spellcheck="false" data-id="${p.id}" style="outline:none;cursor:text;white-space:nowrap;min-width:4px;" onblur="onPlayerName('${p.id}',(this.textContent||'').trim())" onkeydown="if(event.key==='Enter'||event.key==='Tab'){event.preventDefault();this.blur();}" onpaste="event.preventDefault();document.execCommand('insertText',false,(event.clipboardData||window.clipboardData).getData('text'))">${p.name}</span>${hasRookieDot ? '<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#9333ea;flex-shrink:0;margin-top:1px;"></span>' : ''}</div></td>`;
 
   const posCell = p.misc
     ? `<td class="col-pos-cell"><span class="misc-pos">${p.pos}</span></td>`
