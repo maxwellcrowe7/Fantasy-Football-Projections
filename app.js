@@ -3998,11 +3998,11 @@ function renderRankingsView(content, players) {
       hiddenSection += `<div style="padding:4px 10px 0;">`;
       hiddenPlayerList.forEach(p => {
         const clr = (TEAM_COLORS[p.team] || {}).border || '#888';
-        const short = p.team.replace(/^.+ /, '');
+        const short = TEAM_ABBR[p.team] || p.team.replace(/^.+ /, '');
         hiddenSection += `<div style="display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:4px;opacity:0.65;font-size:11px;">
     <span style="color:var(--text-2);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:120px;">${p.name}</span>
-    <span style="background:${clr}22;color:${clr};border:1px solid ${clr}55;border-radius:3px;padding:1px 5px;font-size:9px;font-weight:700;white-space:nowrap;flex-shrink:0;">${short}</span>
-    <button class="add-player-btn" onclick="unhidePlayer('${p.id}')" style="font-size:10px;padding:2px 8px;flex-shrink:0;">Re-rank</button>
+    <span style="background:${clr}22;color:${clr};border:1px solid ${clr}55;border-radius:3px;padding:3px 4px;font-size:10px;font-weight:700;white-space:nowrap;flex-shrink:0;min-width:34px;text-align:center;display:inline-block;line-height:1;">${short}</span>
+    <button class="add-player-btn" onclick="unhidePlayer('${p.id}')" style="font-size:10px;padding:2px 8px;flex-shrink:0;margin-top:0;line-height:1;">Re-rank</button>
   </div>`;
       });
       hiddenSection += `</div>`;
