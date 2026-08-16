@@ -308,10 +308,7 @@ function applyFullPayload(payload) {
     localStorage.setItem('ff_rookie_tags', JSON.stringify(payload.rookieTags));
     rookieTags = new Set(payload.rookieTags);
   }
-  if (payload.hiddenPlayers) {
-    localStorage.setItem('ff_hidden_players', JSON.stringify(payload.hiddenPlayers));
-    hiddenPlayers = new Set(payload.hiddenPlayers);
-  }
+  // hiddenPlayers are now per-ranking-set; legacy global key is ignored on load
   if (payload.kickers) {
     localStorage.setItem('ff_kickers', JSON.stringify(payload.kickers));
     kickers = payload.kickers;
