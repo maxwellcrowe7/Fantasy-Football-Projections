@@ -396,6 +396,8 @@ async function signOut() {
 }
 
 function getInitials() {
+  const initials = localStorage.getItem('ff_initials');
+  if (initials) return initials.toUpperCase();
   const name = localStorage.getItem('ff_display_name') || '';
   if (name.trim()) {
     const parts = name.trim().split(/\s+/);
@@ -407,10 +409,13 @@ function getInitials() {
 }
 function saveDisplayName() {
   const val = document.getElementById('display-name-input').value.trim();
-  if (val) localStorage.setItem('ff_display_name', val);
-  else localStorage.removeItem('ff_display_name');
-  updateAuthBtn();
-  closeAuthDropdown();
+  if (val) localStorage.setItem('ff_display_name', val); else localStorage.removeItem('ff_display_name');
+  updateAuthBtn(); closeAuthDropdown();
+}
+function saveInitials() {
+  const val = document.getElementById('display-initials-input').value.trim().slice(0,3).toUpperCase();
+  if (val) localStorage.setItem('ff_initials', val); else localStorage.removeItem('ff_initials');
+  updateAuthBtn(); closeAuthDropdown();
 }
 function updateAuthBtn() {
   const btn = document.getElementById('nav-auth');
@@ -422,6 +427,8 @@ function updateAuthBtn() {
     if (emailEl) emailEl.textContent = currentUser.email;
     const nameInput = document.getElementById('display-name-input');
     if (nameInput) nameInput.value = localStorage.getItem('ff_display_name') || '';
+    const initialsInput = document.getElementById('display-initials-input');
+    if (initialsInput) initialsInput.value = localStorage.getItem('ff_initials') || '';
   } else {
     btn.textContent = '?';
     btn.title = 'Sign in';
@@ -682,32 +689,35 @@ function loadState() {
 let state = {};
 let selectedTeam = null;
 
-// ─── Hidden players (unranked from rankings pool) ───
-let hiddenPlayers = new Set(JSON.parse(localStorage.getItem('ff_hidden_players') || '[]'));
-function saveHiddenPlayers() {
-  localStorage.setItem('ff_hidden_players', JSON.stringify([...hiddenPlayers]));
-  sbSave();
+// ─── Hidden players — stored per ranking set ───
+function getActiveHiddenPlayers() {
+  return new Set(getActiveRankingSet().hiddenPlayers || []);
 }
+function _setHiddenPlayers(hp) {
+  getActiveRankingSet().hiddenPlayers = [...hp];
+  saveRankingSets();
+}
+function saveHiddenPlayers() {} // kept for compat, no-op
 function hidePlayer(playerId) {
-  hiddenPlayers.add(playerId);
-  saveHiddenPlayers();
+  const hp = getActiveHiddenPlayers();
+  hp.add(playerId);
+  _setHiddenPlayers(hp);
   renderRankings();
 }
 function unhidePlayer(playerId) {
-  hiddenPlayers.delete(playerId);
-  // Move to bottom of current rankings order so they don't pop into a random spot
   const pos = rankPos;
+  const currentPlayers = getPlayersForPos(pos)
+    .filter(p => !getActiveHiddenPlayers().has(p.id) && p.id !== playerId);
+  const enriched = (['DST','K'].includes(pos)) ? currentPlayers : currentPlayers.map(enrichPlayer);
+  const currentOrdered = getRankOrder(pos, enriched);
+  const newOrder = currentOrdered.map(p => p.id);
+  if (!newOrder.includes(playerId)) newOrder.push(playerId);
+  const hp = getActiveHiddenPlayers();
+  hp.delete(playerId);
+  _setHiddenPlayers(hp);
   const set = getActiveRankingSet();
   if (!set.positions[pos]) set.positions[pos] = { order: [], tiers: [] };
-  const order = set.positions[pos].order || [];
-  if (!order.includes(playerId)) order.push(playerId);
-  else {
-    const idx = order.indexOf(playerId);
-    order.splice(idx, 1);
-    order.push(playerId);
-  }
-  set.positions[pos].order = order;
-  saveHiddenPlayers();
+  set.positions[pos].order = newOrder;
   saveRankingSets();
   renderRankings();
 }
@@ -1954,8 +1964,7 @@ function renderPlayerRow(p, data, cols) {
     : '';
   const nameCell = p.misc
     ? `<td><span class="misc-name">${p.name}</span></td>`
-    : `<td><div style="display:flex;align-items:center;gap:4px;">${rookieDot}<input type="text" value="${p.name}" placeholder="player name" spellcheck="false" style="flex:1;min-width:0;"
-        oninput="onPlayerName('${p.id}',this.value)"></div></td>`;
+    : `<td><div style="display:flex;align-items:center;gap:4px;"><input type="text" value="${p.name}" placeholder="player name" spellcheck="false" style="flex:1;min-width:0;" oninput="onPlayerName('${p.id}',this.value)">${rookieDot}</div></td>`;
 
   const posCell = p.misc
     ? `<td class="col-pos-cell"><span class="misc-pos">${p.pos}</span></td>`
@@ -2036,12 +2045,13 @@ function buildFooter(data) {
     const rawTv = data.teamStats[teamKey];
     const tv = parseFloat((rawTv !== undefined && rawTv !== "") ? rawTv : (teamStatsWithDerived[teamKey] || 0));
     if (tv === 0) return `<td class="d-empty">—</td>`;
-    const delta = Math.round(sums[c.key]) - Math.round(tv);
-    const pct = Math.abs(delta) / Math.round(tv);
-    if (Math.abs(delta) < 0.5) return `<td class="d-ok">✓</td>`;
-    const cls = pct > 0.1 ? (delta > 0 ? "d-over" : "d-warn") : "d-ok";
+    const delta = sums[c.key] - tv; // eslint-disable-line no-unused-vars (recomputed below)
     const sign = delta > 0 ? "+" : "";
-    return `<td class="${cls}" title="${delta > 0 ? 'Over' : 'Under'} by ${Math.abs(Math.round(delta))}">${sign}${Math.round(delta)}</td>`;
+    const dispDelta = Math.abs(delta) < 0.5 ? null : (Number.isInteger(delta) ? Math.round(delta) : parseFloat(delta.toFixed(1)));
+    if (dispDelta === null) return `<td class="d-ok">&#10003;</td>`;
+    const pct = Math.abs(delta) / (tv || 1);
+    const cls = pct > 0.1 ? (delta > 0 ? "d-over" : "d-warn") : "d-ok";
+    return `<td class="${cls}" title="${delta > 0 ? 'Over' : 'Under'} by ${Math.abs(parseFloat(delta.toFixed(1)))}">${sign}${dispDelta}</td>`;
   }).join("");
 
   const totalCols = cols.length + 3;
@@ -2414,12 +2424,17 @@ function onPlayerPos(id, val) {
 }
 
 function showTradeMenu(e, playerId) {
-  e.preventDefault();
-  e.stopPropagation();
+  e.preventDefault(); e.stopPropagation();
   document.querySelectorAll('.trade-ctx-menu').forEach(m => m.remove());
-  const data = ensureTeam(selectedTeam);
-  const player = data.players.find(p => p.id === playerId);
-  if (!player) return;
+
+  const menu = document.createElement('div');
+  menu.className = 'trade-ctx-menu';
+
+  // Trade item with submenu
+  const tradeItem = document.createElement('div');
+  tradeItem.className = 'trade-ctx-item trade-has-sub';
+  const isRookie = rookieTags.has(playerId);
+  tradeItem.innerHTML = 'Trade <span style="float:right;opacity:0.5;">&#9658;</span>';
 
   const allTeams = [];
   for (const conf of ['AFC','NFC']) {
@@ -2428,45 +2443,37 @@ function showTradeMenu(e, playerId) {
     }
   }
 
-  const menu = document.createElement('div');
-  menu.className = 'trade-ctx-menu';
-
-  const label = document.createElement('div');
-  label.className = 'trade-ctx-label';
-  label.textContent = 'Trade ' + player.name + ' to...';
-  menu.appendChild(label);
-
-  const list = document.createElement('div');
-  list.className = 'trade-ctx-list';
+  const submenu = document.createElement('div');
+  submenu.className = 'trade-ctx-submenu';
   allTeams.forEach(team => {
     const item = document.createElement('div');
     item.className = 'trade-ctx-item';
-    item.textContent = TEAM_LOGOS[team] || team;
+    item.textContent = (TEAM_LOGOS ? (TEAM_LOGOS[team] || team) : team);
     item.title = team;
     item.onclick = () => { menu.remove(); tradePlayer(playerId, team); };
-    list.appendChild(item);
+    submenu.appendChild(item);
   });
-  menu.appendChild(list);
+  tradeItem.appendChild(submenu);
+  menu.appendChild(tradeItem);
 
+  // Separator
   const sep = document.createElement('div');
   sep.style.cssText = 'border-top:1px solid var(--border,#d0cdc6);margin:4px 0;';
   menu.appendChild(sep);
 
+  // Rookie item
   const rookieItem = document.createElement('div');
   rookieItem.className = 'trade-ctx-item';
-  const isRookie = rookieTags.has(playerId);
-  rookieItem.innerHTML = (isRookie ? '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#9333ea;margin-right:6px;vertical-align:middle;"></span>Remove rookie tag' : '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#9333ea;margin-right:6px;vertical-align:middle;"></span>Rookie tag');
   rookieItem.style.color = '#9333ea';
+  rookieItem.innerHTML = (isRookie ? '&#9679; Remove rookie' : '&#9675; Rookie');
   rookieItem.onclick = () => { menu.remove(); toggleRookieTag(playerId); };
   menu.appendChild(rookieItem);
 
   document.body.appendChild(menu);
-
-  const mh = Math.min(300, allTeams.length * 28 + 36);
-  const mw = 180;
+  const mw = 160;
+  menu.style.cssText = `position:fixed;z-index:1000;background:var(--bg-2,#f5f3ee);border:1px solid var(--border,#d0cdc6);border-radius:6px;box-shadow:0 4px 16px rgba(0,0,0,0.12);min-width:${mw}px;padding:4px 0;`;
   menu.style.left = (e.clientX + mw > window.innerWidth ? e.clientX - mw : e.clientX) + 'px';
-  menu.style.top  = (e.clientY + mh > window.innerHeight ? e.clientY - mh : e.clientY) + 'px';
-
+  menu.style.top = e.clientY + 'px';
   const close = ev => { if (!menu.contains(ev.target)) { menu.remove(); document.removeEventListener('mousedown', close); } };
   setTimeout(() => document.addEventListener('mousedown', close), 0);
 }
@@ -3114,7 +3121,8 @@ function renderSettings() {
   const activeTab = page.dataset.activeTab || 'scoring';
 
   const allNFLTeams = getAllTeams();
-  const teamOpts = allNFLTeams.map(t => `<option value="${t}">${t}</option>`).join('');
+  const sortedTeams = [...allNFLTeams].sort();
+  const teamOpts = sortedTeams.map(t => `<option value="${t}">${t}</option>`).join('');
 
   page.innerHTML = `
     <h1>Settings</h1>
@@ -3153,12 +3161,14 @@ function renderSettings() {
           const clr = (TEAM_COLORS[k.team] || {}).border || '#888';
           const short = (k.team || '').replace(/^.+ /, '') || '—';
           return `<div style="display:flex;align-items:center;gap:10px;padding:6px 10px;background:var(--bg-3);border:1px solid var(--border);border-radius:4px;">
-            <span style="flex:1;font-size:12px;color:var(--text);">${k.name}</span>
-            <span style="background:${clr}22;color:${clr};border:1px solid ${clr}55;border-radius:3px;padding:1px 6px;font-size:9px;font-weight:700;">${short}</span>
-            <button class="add-player-btn" onclick="deleteKicker('${k.id}')" style="font-size:10px;padding:2px 8px;color:var(--red,#ef4444);border-color:var(--red,#ef4444);">Remove</button>
+            <div style="display:flex;align-items:center;gap:6px;flex:1;">
+              <span style="font-size:12px;">${k.name}</span>
+              <span style="background:${clr}22;color:${clr};border:1px solid ${clr}55;border-radius:3px;padding:1px 5px;font-size:9px;font-weight:700;white-space:nowrap;">${short}</span>
+            </div>
+            <button style="flex-shrink:0;" class="add-player-btn" onclick="deleteKicker('${k.id}')" style="font-size:10px;padding:2px 8px;color:var(--red,#ef4444);border-color:var(--red,#ef4444);">Remove</button>
           </div>`;
         }).join('') + `</div>` : `<p style="font-size:11px;color:var(--text-3);margin-bottom:12px;font-family:var(--font-mono);">No kickers added yet.</p>`}
-      <div style="display:flex;gap:8px;align-items:center;margin-bottom:24px;flex-wrap:wrap;">
+      <div style="display:flex;gap:8px;align-items:flex-end;margin-bottom:24px;flex-wrap:wrap;">
         <input id="new-kicker-name" type="text" placeholder="Player name" spellcheck="false"
           style="background:var(--bg-3);border:1px solid var(--border-2);border-radius:4px;padding:6px 10px;font-size:12px;color:var(--text);outline:none;width:180px;"
           onkeydown="if(event.key==='Enter')addKicker()">
@@ -3319,13 +3329,29 @@ function setQbRecMode(val) {
 
 function _updateRankToolbarToggles() {
   const isDST = rankPos === 'DST', isK = rankPos === 'K';
-  const inStats = rankView === 'stats' && !isDST && !isK;
+  const inStats = rankView === 'stats';
+  // QB rec toggle: show only when QB position
   const qbToggle = document.getElementById('qb-rec-toggle');
-  if (qbToggle) qbToggle.style.display = (rankPos === 'QB' && inStats) ? '' : 'none';
+  if (qbToggle) qbToggle.style.display = (rankPos === 'QB') ? '' : 'none';
+  // Skill pass toggle: show for RB/WR/TE
   const skillToggle = document.getElementById('skill-pass-toggle');
-  if (skillToggle) skillToggle.style.display = (['RB','WR','TE'].includes(rankPos) && inStats) ? '' : 'none';
+  if (skillToggle) skillToggle.style.display = (['RB','WR','TE'].includes(rankPos)) ? '' : 'none';
+  // D/ST and K tabs: only show in rankings view
+  const dstTab = document.getElementById('rtab-DST');
+  const kTab = document.getElementById('rtab-K');
+  if (dstTab) dstTab.style.display = inStats ? 'none' : '';
+  if (kTab) kTab.style.display = inStats ? 'none' : '';
+  // Stats button: disabled for DST/K
   const statsBtn = document.getElementById('vbtn-stats');
   if (statsBtn) { statsBtn.disabled = isDST || isK; statsBtn.style.opacity = (isDST || isK) ? '0.4' : ''; }
+  // If in stats mode and on DST/K, force to QB
+  if (inStats && (isDST || isK)) {
+    rankPos = 'QB';
+    ['QB','RB','WR','TE','DST','K'].forEach(p => {
+      const btn = document.getElementById(`rtab-${p}`);
+      if (btn) btn.className = `pos-tab${rankPos === p ? ` active active-${p.toLowerCase()}` : ""}`;
+    });
+  }
 }
 
 function setRankPos(pos) {
@@ -3504,7 +3530,7 @@ function loadRankingSets() {
   } catch(e) {
     ['QB','RB','WR','TE','DST','K'].forEach(pos => { positions[pos] = { order: [], tiers: [] }; });
   }
-  return [{ id: 'set_0', name: 'Main', scoring_idx: 0, positions }];
+  return [{ id: 'set_0', name: 'Main', scoring_idx: 0, positions, hiddenPlayers: [] }];
 }
 function saveRankingSets() {
   try { localStorage.setItem('ff_ranking_sets', JSON.stringify(rankingSets)); } catch(e) {}
@@ -3533,7 +3559,7 @@ function setActiveRankingSetIdx(i) {
 function createRankingSet(name) {
   const positions = {};
   ['QB','RB','WR','TE','DST','K'].forEach(pos => { positions[pos] = { order: [], tiers: [] }; });
-  rankingSets.push({ id: 'set_' + Date.now(), name: name || 'Set ' + (rankingSets.length + 1), scoring_idx: getActiveRankingSet().scoring_idx, positions });
+  rankingSets.push({ id: 'set_' + Date.now(), name: name || 'Set ' + (rankingSets.length + 1), scoring_idx: getActiveRankingSet().scoring_idx, positions, hiddenPlayers: [] });
   activeRankingSetIdx = rankingSets.length - 1;
   localStorage.setItem('ff_active_ranking_set', activeRankingSetIdx);
   saveRankingSets();
@@ -3582,8 +3608,48 @@ function renderRankingSetsTabs() {
 }
 
 function promptNewRankingSet() {
-  const name = prompt('Name for new ranking set:', 'Set ' + (rankingSets.length + 1));
-  if (name !== null && name.trim()) createRankingSet(name.trim());
+  const overlay = document.createElement('div');
+  overlay.className = 'draft-setup-overlay';
+  const scoringOpts = scoringPresets.map((p, i) =>
+    `<option value="${i}"${i === getActiveRankingSet().scoring_idx ? ' selected' : ''}>${p.name}</option>`
+  ).join('');
+  const copyOpts = '<option value="">— Start blank —</option>' +
+    rankingSets.map((s, i) => `<option value="${i}">${s.name}</option>`).join('');
+  overlay.innerHTML = `
+    <div class="draft-setup-modal" onclick="event.stopPropagation()" style="max-width:360px;">
+      <h2>New Ranking Set</h2>
+      <div class="draft-setup-field"><label>Name</label><input type="text" id="nrs-name" value="Set ${rankingSets.length + 1}" style="width:100%;"></div>
+      <div class="draft-setup-field"><label>Copy from</label><select id="nrs-copy" style="width:100%;">${copyOpts}</select></div>
+      <div class="draft-setup-field"><label>Scoring preset</label><select id="nrs-scoring" style="width:100%;">${scoringOpts}</select></div>
+      <div class="draft-setup-actions">
+        <button class="draft-btn-secondary" onclick="this.closest('.draft-setup-overlay').remove()">Cancel</button>
+        <button class="draft-btn-primary" onclick="saveNewRankingSet()">Create</button>
+      </div>
+    </div>`;
+  overlay.onclick = () => overlay.remove();
+  document.body.appendChild(overlay);
+  document.getElementById('nrs-name').focus();
+}
+
+function saveNewRankingSet() {
+  const name = (document.getElementById('nrs-name').value || '').trim() || 'Set ' + (rankingSets.length + 1);
+  const copyIdx = document.getElementById('nrs-copy').value;
+  const scoringIdx = parseInt(document.getElementById('nrs-scoring').value) || 0;
+  const positions = {};
+  ['QB','RB','WR','TE','DST','K'].forEach(pos => { positions[pos] = { order: [], tiers: [] }; });
+  const newSet = { id: 'set_' + Date.now(), name, scoring_idx: scoringIdx, positions, hiddenPlayers: [] };
+  if (copyIdx !== '') {
+    const src = rankingSets[parseInt(copyIdx)];
+    if (src) { newSet.positions = JSON.parse(JSON.stringify(src.positions)); }
+  }
+  rankingSets.push(newSet);
+  activeRankingSetIdx = rankingSets.length - 1;
+  localStorage.setItem('ff_active_ranking_set', activeRankingSetIdx);
+  saveRankingSets();
+  document.querySelector('.draft-setup-overlay')?.remove();
+  renderRankingSetsTabs();
+  renderScoringPresetSelector();
+  renderRankings();
 }
 
 function showRankingSetCtxMenu(e, idx) {
@@ -3598,14 +3664,11 @@ function showRankingSetCtxMenu(e, idx) {
   renameItem.onclick = () => { menu.remove(); const n = prompt('Rename:', rankingSets[idx]?.name || ''); if (n !== null && n.trim()) renameRankingSet(idx, n.trim()); };
   menu.appendChild(renameItem);
 
-  rankingSets.forEach((set, i) => {
-    if (i === idx) return;
-    const copyItem = document.createElement('div');
-    copyItem.className = 'trade-ctx-item';
-    copyItem.textContent = 'Copy from "' + set.name + '"';
-    copyItem.onclick = () => { menu.remove(); copyRankingSetInto(idx, i); };
-    menu.appendChild(copyItem);
-  });
+  const editScoringItem = document.createElement('div');
+  editScoringItem.className = 'trade-ctx-item';
+  editScoringItem.textContent = 'Edit scoring settings';
+  editScoringItem.onclick = () => { menu.remove(); openEditRankingSetModal(idx); };
+  menu.appendChild(editScoringItem);
 
   if (rankingSets.length > 1) {
     const sep = document.createElement('div');
@@ -3625,6 +3688,40 @@ function showRankingSetCtxMenu(e, idx) {
   menu.style.top = e.clientY + 'px';
   const close = ev => { if (!menu.contains(ev.target)) { menu.remove(); document.removeEventListener('mousedown', close); } };
   setTimeout(() => document.addEventListener('mousedown', close), 0);
+}
+
+function openEditRankingSetModal(idx) {
+  const set = rankingSets[idx];
+  if (!set) return;
+  const overlay = document.createElement('div');
+  overlay.className = 'draft-setup-overlay';
+  const scoringOpts = scoringPresets.map((p, i) =>
+    `<option value="${i}"${i === (set.scoring_idx || 0) ? ' selected' : ''}>${p.name}</option>`
+  ).join('');
+  overlay.innerHTML = `
+    <div class="draft-setup-modal" onclick="event.stopPropagation()" style="max-width:320px;">
+      <h2>Edit "${set.name}"</h2>
+      <div class="draft-setup-field"><label>Name</label><input type="text" id="ers-name" value="${set.name}" style="width:100%;"></div>
+      <div class="draft-setup-field"><label>Scoring preset</label><select id="ers-scoring" style="width:100%;">${scoringOpts}</select></div>
+      <div class="draft-setup-actions">
+        <button class="draft-btn-secondary" onclick="this.closest('.draft-setup-overlay').remove()">Cancel</button>
+        <button class="draft-btn-primary" onclick="saveEditRankingSet(${idx})">Save</button>
+      </div>
+    </div>`;
+  overlay.onclick = () => overlay.remove();
+  document.body.appendChild(overlay);
+}
+
+function saveEditRankingSet(idx) {
+  const set = rankingSets[idx];
+  if (!set) return;
+  const name = (document.getElementById('ers-name').value || '').trim();
+  if (name) set.name = name;
+  set.scoring_idx = parseInt(document.getElementById('ers-scoring').value) || 0;
+  saveRankingSets();
+  document.querySelector('.draft-setup-overlay')?.remove();
+  renderRankingSetsTabs();
+  if (idx === activeRankingSetIdx) renderRankings();
 }
 
 function defaultRankOrder(players) {
@@ -3675,6 +3772,11 @@ let _rankingsScoringCtx = null; // overrides getActiveScoring() during rankings 
 
 function renderRankings() {
   renderRankingSetsTabs();
+  const setsEl = document.getElementById('ranking-sets-tabs');
+  const scoringEl = document.getElementById('scoring-preset-selector');
+  if (setsEl) setsEl.style.display = (rankView === 'rankings') ? '' : 'none';
+  if (scoringEl) scoringEl.style.display = (rankView === 'stats') ? '' : 'none';
+  if (rankView === 'stats') renderScoringPresetSelector();
   const content = document.getElementById("rankings-content");
   const isDST = rankPos === 'DST';
   const isK = rankPos === 'K';
@@ -3755,14 +3857,17 @@ function renderStatsView(content, players) {
       return `<td${isFpts ? ' style="font-weight:600;color:var(--accent);"' : ""}>${disp}</td>`;
     }).join("");
     const short = p.team.replace(/^.+ /, "");
-    return `<tr><td>${p.name}</td><td>${short}</td>${cells}</tr>`;
+    const clr = (TEAM_COLORS[p.team] || {}).border || '#888';
+    const rdot = rookieTags.has(p.id) ? '<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#9333ea;margin-left:5px;vertical-align:middle;flex-shrink:0;"></span>' : '';
+    const teamBadge = `<span style="background:${clr}22;color:${clr};border:1px solid ${clr}55;border-radius:3px;padding:2px 6px;font-size:9px;font-weight:700;letter-spacing:0.04em;white-space:nowrap;text-align:center;display:inline-block;">${short}</span>`;
+    return `<tr><td>${p.name}${rdot}</td><td>${teamBadge}</td>${cells}</tr>`;
   }).join("");
 
   content.innerHTML = `
     <div class="stats-table-wrap">
       <table class="stats-table">
         <thead><tr>
-          <th>Player</th><th>Team</th>${headers}
+          <th>Player</th><th style="text-align:center;">Team</th>${headers}
         </tr></thead>
         <tbody>${rows}</tbody>
       </table>
@@ -3780,8 +3885,9 @@ function sortStats(col) {
 
 function renderRankingsView(content, players) {
   // Split into visible and hidden
-  const visiblePlayers = players.filter(p => !hiddenPlayers.has(p.id));
-  const hiddenPlayerList = players.filter(p => hiddenPlayers.has(p.id));
+  const hp = getActiveHiddenPlayers();
+  const visiblePlayers = players.filter(p => !hp.has(p.id));
+  const hiddenPlayerList = players.filter(p => hp.has(p.id));
 
   const ordered = getRankOrder(rankPos, visiblePlayers);
   const tierIds = getTiers(rankPos); // player IDs that start a new tier
@@ -3799,11 +3905,12 @@ function renderRankingsView(content, players) {
     return `<div class="rank-stat"><div class="rank-stat-lbl" style="color:${color};">${c.label}</div></div>`;
   }).join("");
 
+  const headerLabel = isDST ? 'Defense' : isK ? 'Kicker' : 'Player';
   let html = `<div class="rankings-list" id="rankings-list">
     <div class="rank-row" style="cursor:default;background:var(--bg-3);border-bottom:1px solid var(--border-2);pointer-events:none;position:sticky;top:0;z-index:10;">
       <span class="rank-num"></span>
-      <div style="flex:0 0 12%;font-size:10px;color:var(--text-3);letter-spacing:0.08em;text-transform:uppercase;">Player</div>
-      <span class="rank-team" style="font-size:10px;color:var(--text-3);letter-spacing:0.08em;text-transform:uppercase;">Team</span>
+      <div style="flex:0 0 ${isDST || isK ? '24%' : '12%'};font-size:10px;color:var(--text-3);letter-spacing:0.08em;text-transform:uppercase;">${headerLabel}</div>
+      ${isDST ? '' : '<span class="rank-team" style="font-size:10px;color:var(--text-3);letter-spacing:0.08em;text-transform:uppercase;">Team</span>'}
       <div class="rank-stats">${headerCells}</div>
     </div>`;
 
@@ -3847,26 +3954,39 @@ function renderRankingsView(content, players) {
     const short = teamName.replace(/^.+ /, "");
     const teamClr = (TEAM_COLORS[teamName] || {}).border || '#888';
     const rookieDot = (!isDST && !isK && rookieTags.has(p.id)) ? `<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#9333ea;margin-left:4px;flex-shrink:0;vertical-align:middle;"></span>` : '';
-    const displayName = isDST ? short + ' D/ST' : p.name;
-    const teamBadge = isDST ? '' : `<span class="rank-team" style="background:${teamClr}22;color:${teamClr};border:1px solid ${teamClr}55;border-radius:3px;padding:1px 5px;font-size:9px;font-weight:700;letter-spacing:0.04em;white-space:nowrap;">${short}</span>`;
-    html += `<div class="rank-row${isTierLeader ? ' tier-leader' : ''}" data-player-idx="${i}" data-player-id="${p.id}"
+    const teamBadge = isDST
+      ? `<span style="background:${teamClr}22;color:${teamClr};border:1px solid ${teamClr}55;border-radius:3px;padding:2px 6px;font-size:9px;font-weight:700;letter-spacing:0.04em;white-space:nowrap;text-align:center;">${short} D/ST</span>`
+      : `<span class="rank-team" style="background:${teamClr}22;color:${teamClr};border:1px solid ${teamClr}55;border-radius:3px;padding:2px 6px;font-size:9px;font-weight:700;letter-spacing:0.04em;white-space:nowrap;">${short}</span>`;
+    const rowAttrs = `class="rank-row${isTierLeader ? ' tier-leader' : ''}" data-player-idx="${i}" data-player-id="${p.id}"
       draggable="true"
       ondragstart="onPlayerDragStart(event,${i})"
       ondragover="onDragOver(event,this,${i})"
       ondragleave="onDragLeave(event)"
       ondrop="onDrop(event,'player',${i})"
       ondragend="onDragEnd(event)"
-      oncontextmenu="showRankCtxMenu(event,'${p.id}')">
+      oncontextmenu="showRankCtxMenu(event,'${p.id}')"`;
+    if (isDST) {
+      html += `<div ${rowAttrs}>
       <span class="rank-num">${i + 1}</span>
-      <div style="flex:0 0 ${isDST || isK ? '20%' : '12%'};min-width:0;overflow:hidden;">
+      <div style="flex:0 0 24%;min-width:0;overflow:hidden;">
         <div class="rank-name" style="display:flex;align-items:center;gap:4px;">
-          ${isDST ? `<span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${teamClr};flex-shrink:0;"></span>` : ''}
-          ${displayName}${rookieDot}
+          ${teamBadge}
+        </div>
+      </div>
+      <div class="rank-stats">${statCells}</div>
+    </div>`;
+    } else {
+      html += `<div ${rowAttrs}>
+      <span class="rank-num">${i + 1}</span>
+      <div style="flex:0 0 12%;min-width:0;overflow:hidden;">
+        <div class="rank-name" style="display:flex;align-items:center;gap:4px;">
+          <span>${p.name}${rookieDot}</span>
         </div>
       </div>
       ${teamBadge}
       <div class="rank-stats">${statCells}</div>
     </div>`;
+    }
   });
 
   // Hidden players section
@@ -3882,11 +4002,11 @@ function renderRankingsView(content, players) {
       hiddenPlayerList.forEach(p => {
         const clr = (TEAM_COLORS[p.team] || {}).border || '#888';
         const short = p.team.replace(/^.+ /, '');
-        hiddenSection += `<div style="display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:4px;opacity:0.6;font-size:12px;">
-          <span style="flex:1;color:var(--text-2);">${p.name}</span>
-          <span style="background:${clr}22;color:${clr};border:1px solid ${clr}55;border-radius:3px;padding:1px 5px;font-size:9px;font-weight:700;">${short}</span>
-          <button class="add-player-btn" onclick="unhidePlayer('${p.id}')" style="font-size:10px;padding:2px 8px;">Re-rank</button>
-        </div>`;
+        hiddenSection += `<div style="display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:4px;opacity:0.65;font-size:11px;">
+    <span style="color:var(--text-2);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:120px;">${p.name}</span>
+    <span style="background:${clr}22;color:${clr};border:1px solid ${clr}55;border-radius:3px;padding:1px 5px;font-size:9px;font-weight:700;white-space:nowrap;flex-shrink:0;">${short}</span>
+    <button class="add-player-btn" onclick="unhidePlayer('${p.id}')" style="font-size:10px;padding:2px 8px;flex-shrink:0;">Re-rank</button>
+  </div>`;
       });
       hiddenSection += `</div>`;
     }
@@ -3901,35 +4021,72 @@ function renderRankingsView(content, players) {
 }
 
 function showRankCtxMenu(e, playerId) {
-  e.preventDefault();
-  e.stopPropagation();
+  e.preventDefault(); e.stopPropagation();
   document.querySelectorAll('.rank-ctx-menu').forEach(m => m.remove());
   const menu = document.createElement('div');
   menu.className = 'rank-ctx-menu trade-ctx-menu';
+
   const hideItem = document.createElement('div');
   hideItem.className = 'trade-ctx-item';
   hideItem.textContent = 'Hide player';
   hideItem.style.color = 'var(--text-2)';
   hideItem.onclick = () => { menu.remove(); hidePlayer(playerId); };
   menu.appendChild(hideItem);
+
+  const sep = document.createElement('div');
+  sep.style.cssText = 'border-top:1px solid var(--border-2);margin:4px 0;';
+  menu.appendChild(sep);
+
+  const tierAbove = document.createElement('div');
+  tierAbove.className = 'trade-ctx-item';
+  tierAbove.textContent = 'Tier break above';
+  tierAbove.style.color = 'var(--text-3)';
+  tierAbove.onclick = () => { menu.remove(); addTierAbove(playerId); };
+  menu.appendChild(tierAbove);
+
+  const tierBelow = document.createElement('div');
+  tierBelow.className = 'trade-ctx-item';
+  tierBelow.textContent = 'Tier break below';
+  tierBelow.style.color = 'var(--text-3)';
+  tierBelow.onclick = () => { menu.remove(); addTierBelow(playerId); };
+  menu.appendChild(tierBelow);
+
   document.body.appendChild(menu);
-  const mw = 140;
+  const mw = 160;
   menu.style.left = (e.clientX + mw > window.innerWidth ? e.clientX - mw : e.clientX) + 'px';
   menu.style.top = e.clientY + 'px';
   const close = ev => { if (!menu.contains(ev.target)) { menu.remove(); document.removeEventListener('mousedown', close); } };
   setTimeout(() => document.addEventListener('mousedown', close), 0);
 }
 
+function addTierAbove(playerId) {
+  const tiers = getTiers(rankPos);
+  if (!tiers.includes(playerId)) { tiers.push(playerId); setTiers(rankPos, tiers); }
+  renderRankings();
+}
+function addTierBelow(playerId) {
+  const hp = getActiveHiddenPlayers();
+  const players = getPlayersForPos(rankPos).filter(p => !hp.has(p.id));
+  const enriched = (['DST','K'].includes(rankPos)) ? players : players.map(enrichPlayer);
+  const ordered = getRankOrder(rankPos, enriched);
+  const idx = ordered.findIndex(p => p.id === playerId);
+  if (idx >= 0 && idx < ordered.length - 1) {
+    const nextId = ordered[idx + 1].id;
+    const tiers = getTiers(rankPos);
+    if (!tiers.includes(nextId)) { tiers.push(nextId); setTiers(rankPos, tiers); }
+    renderRankings();
+  }
+}
+
 function addTierAtEnd() {
-  const players = getPlayersForPos(rankPos).map(enrichPlayer);
-  const ordered = getRankOrder(rankPos, players);
+  const hp = getActiveHiddenPlayers();
+  const players = getPlayersForPos(rankPos).filter(p => !hp.has(p.id));
+  const enriched = (['DST','K'].includes(rankPos)) ? players : players.map(enrichPlayer);
+  const ordered = getRankOrder(rankPos, enriched);
   const tiers = getTiers(rankPos);
   if (ordered.length > 1) {
     const lastId = ordered[ordered.length - 1].id;
-    if (!tiers.includes(lastId)) {
-      tiers.push(lastId);
-      setTiers(rankPos, tiers);
-    }
+    if (!tiers.includes(lastId)) { tiers.push(lastId); setTiers(rankPos, tiers); }
   }
   renderRankings();
 }
@@ -5685,10 +5842,10 @@ function saveDraftState() { localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringi
 let draftState = loadDraftState();
 function getActiveLeague() { return draftState.leagues[draftState.activeLeague] || null; }
 
-function buildPickOrder(numTeams, numRounds) {
+function buildPickOrder(numTeams, numRounds, draftType) {
   const picks = [];
   for (let r = 0; r < numRounds; r++) {
-    const ltr = r % 2 === 0;
+    const ltr = (draftType === 'linear') ? true : (r % 2 === 0);
     for (let i = 0; i < numTeams; i++) {
       picks.push({ round: r + 1, pick: r * numTeams + i + 1, teamIdx: ltr ? i : (numTeams - 1 - i) });
     }
@@ -5742,8 +5899,8 @@ function renderDraftSetupPrompt(page) {
 function renderDraftFull(page) {
   const league = getActiveLeague();
   if (!league) { renderDraftSetupPrompt(page); return; }
-  const pickOrder = buildPickOrder(league.numTeams, league.numRounds);
-  const currentPickIdx = getNextPickIdx(league, buildPickOrder(league.numTeams, league.numRounds));
+  const pickOrder = buildPickOrder(league.numTeams, league.numRounds, league.draftType || 'snake');
+  const currentPickIdx = getNextPickIdx(league, buildPickOrder(league.numTeams, league.numRounds, league.draftType || 'snake'));
   const onClockPick = pickOrder[currentPickIdx] || null;
   const isMyPick = onClockPick && onClockPick.teamIdx === (league.myPick - 1);
 
@@ -5788,7 +5945,7 @@ function renderDraftPool(league, onClockPick, searchQuery) {
   // My picks per position
   const myPicksList = (league.picks || []).filter(pk => {
     const idx = pk.pickIndex !== undefined ? pk.pickIndex : pk.pickNum - 1;
-    const po = buildPickOrder(league.numTeams, league.numRounds)[idx];
+    const po = buildPickOrder(league.numTeams, league.numRounds, league.draftType || 'snake')[idx];
     return po && po.teamIdx === league.myPick - 1;
   });
   const myPosCounts = {};
@@ -5829,7 +5986,7 @@ function renderDraftPool(league, onClockPick, searchQuery) {
       colHtml += '<div class="draft-player-row' + (isDrafted ? ' drafted' : '') + '" data-player-id="' + p.id + '" data-name="' + p.name.replace(/"/g,'&quot;') + '"' +
         (isDrafted ? ' onclick="highlightBoardPick(this)" oncontextmenu="draftCtxFromEl(event,this)" title="Click to locate on board"' :
           (canDraft ? ' onclick="draftPlayer(\'' + safeId + '\')" title="Draft ' + p.name + '"' : '')) + '>' +
-        '<div class="draft-player-name"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:' + dotColor + ';margin-right:5px;flex-shrink:0;"></span>' + displayName + rookieTag + '</div>' +
+        '<div class="draft-player-name"><span style="background:' + dotColor + '22;color:' + dotColor + ';border:1px solid ' + dotColor + '55;border-radius:2px;padding:0 3px;font-size:8px;font-weight:700;margin-right:4px;flex-shrink:0;white-space:nowrap;">' + short + '</span>' + displayName + rookieTag + '</div>' +
         '<div class="draft-player-meta"><span>' + short + '</span><span>' + fptsDisp + '</span></div>' +
         '</div>';
     });
@@ -5876,9 +6033,9 @@ function renderDraftBoard(league, pickOrder, currentPickIdx, onClockPick) {
   html += '</tr></thead><tbody>';
 
   for (let r = 0; r < league.numRounds; r++) {
-    const ltr = r % 2 === 0;
+    const ltr = (league.draftType === 'linear') ? true : (r % 2 === 0);
     const dirArrow = ltr ? '→' : '←';
-    html += '<tr><td class="round-label">R' + (r+1) + '<span style="display:block;font-size:9px;color:var(--text-3);line-height:1;margin-top:2px;">' + dirArrow + '</span></td>';
+    html += '<tr><td class="round-label">R' + (r+1) + '<span style="display:block;font-size:13px;color:var(--text-2);line-height:1;margin-top:2px;">' + dirArrow + '</span></td>';
     for (let col = 0; col < league.numTeams; col++) {
       const teamIdx = ltr ? col : (league.numTeams - 1 - col);
       const globalIdx = r * league.numTeams + (ltr ? col : (league.numTeams - 1 - col));
@@ -5990,7 +6147,7 @@ function clearDraftSearch() {
   window._draftSearchQuery = '';
   const league = getActiveLeague();
   if (!league) return;
-  const pickOrder = buildPickOrder(league.numTeams, league.numRounds);
+  const pickOrder = buildPickOrder(league.numTeams, league.numRounds, league.draftType || 'snake');
   const currentPickIdx = getNextPickIdx(league, pickOrder);
   const onClockPick = pickOrder[currentPickIdx] || null;
   renderDraftPool(league, onClockPick, '');
@@ -6002,7 +6159,7 @@ function onDraftSearch(val) {
   window._draftSearchQuery = val;
   const league = getActiveLeague();
   if (!league) return;
-  const pickOrder = buildPickOrder(league.numTeams, league.numRounds);
+  const pickOrder = buildPickOrder(league.numTeams, league.numRounds, league.draftType || 'snake');
   const currentPickIdx = getNextPickIdx(league, pickOrder);
   const onClockPick = pickOrder[currentPickIdx] || null;
   renderDraftPool(league, onClockPick, val);
@@ -6040,8 +6197,8 @@ function renderDraftFullPreserveScroll() {
 function draftPlayer(playerId) {
   const league = getActiveLeague();
   if (!league) return;
-  const pickOrder = buildPickOrder(league.numTeams, league.numRounds);
-  const currentPickIdx = getNextPickIdx(league, buildPickOrder(league.numTeams, league.numRounds));
+  const pickOrder = buildPickOrder(league.numTeams, league.numRounds, league.draftType || 'snake');
+  const currentPickIdx = getNextPickIdx(league, buildPickOrder(league.numTeams, league.numRounds, league.draftType || 'snake'));
   if (currentPickIdx >= pickOrder.length) return;
   const byPos = getDraftPoolByPos();
   const allPlayers = Object.values(byPos).flat();
@@ -6142,6 +6299,7 @@ function openDraftSetupModal(editIdx) {
   const defTeams = existing ? existing.numTeams : 12;
   const defPick = existing ? existing.myPick : 1;
   const defRounds = existing ? existing.numRounds : 16;
+  const draftTypeVal = existing ? (existing.draftType || 'snake') : 'snake';
   const pc = slotsToPosCounts(existing ? existing.rosterSlots : null);
   const starters = Object.values(pc).reduce((a,b)=>a+b,0);
   const bench = Math.max(0, defRounds - starters);
@@ -6157,6 +6315,7 @@ function openDraftSetupModal(editIdx) {
     '<div class="draft-setup-field"><label>Teams</label><select id="ds-teams" onchange="updateMyPickOptions(this.value)">' + numTeamsOpts + '</select></div>' +
     '<div class="draft-setup-field"><label>Your Draft Position</label><select id="ds-mypick">' + myPickOpts + '</select></div>' +
     '<div class="draft-setup-field"><label>Rounds</label><select id="ds-rounds" onchange="dsBenchUpdate()">' + numRoundsOpts + '</select></div>' +
+    '<div class="draft-setup-field"><label>Draft Type</label><div style="display:flex;gap:8px;"><button id="ds-snake-btn" class="view-btn ' + (draftTypeVal === 'snake' ? 'active' : '') + '" onclick="setDsType(\'snake\')">Snake</button><button id="ds-linear-btn" class="view-btn ' + (draftTypeVal !== 'snake' ? 'active' : '') + '" onclick="setDsType(\'linear\')">Linear</button></div></div>' +
     '<div class="draft-setup-section-title">Roster Slots</div>' +
     '<div class="draft-roster-builder">' +
     '<div class="draft-roster-builder-cell"><span class="draft-pos-badge" style="background:#f0c8c8;color:#b03030;border:1px solid #e05252;">QB</span>' + stepperHtml('ds-pos-QB', pc.QB, 0) + '</div>' +
@@ -6176,6 +6335,11 @@ function openDraftSetupModal(editIdx) {
     '</div></div>';
   overlay.onclick = () => overlay.remove();
   document.body.appendChild(overlay);
+}
+
+function setDsType(t) {
+  document.getElementById('ds-snake-btn').classList.toggle('active', t === 'snake');
+  document.getElementById('ds-linear-btn').classList.toggle('active', t !== 'snake');
 }
 
 function updateMyPickOptions(numTeams) {
@@ -6200,6 +6364,7 @@ function saveDraftLeague(editIdx) {
     K:  parseInt(document.getElementById('ds-pos-K')?.value)||0,
     'D/ST': parseInt(document.getElementById('ds-pos-DST')?.value)||0,
   };
+  const draftType = document.getElementById('ds-snake-btn')?.classList.contains('active') ? 'snake' : 'linear';
   const starterSlots = posCountsToSlots(pc);
   const benchCount = Math.max(0, numRounds - starterSlots.length);
   const rosterSlots = [...starterSlots, ...Array(benchCount).fill('BN')];
@@ -6207,12 +6372,12 @@ function saveDraftLeague(editIdx) {
   if (isEdit) {
     const ex = draftState.leagues[editIdx];
     ex.name = name; ex.numTeams = numTeams; ex.myPick = myPick; ex.numRounds = numRounds;
-    ex.rosterSlots = rosterSlots;
+    ex.rosterSlots = rosterSlots; ex.draftType = draftType;
     if (!ex.teamNames) ex.teamNames = [];
     while (ex.teamNames.length < numTeams) ex.teamNames.push('Team ' + (ex.teamNames.length + 1));
     ex.teamNames.length = numTeams;
   } else {
-    draftState.leagues.push({ name, numTeams, myPick, numRounds, teamNames: Array.from({length:numTeams},(_,i)=>'Team '+(i+1)), picks: [], rosterSlots });
+    draftState.leagues.push({ name, numTeams, myPick, numRounds, draftType, teamNames: Array.from({length:numTeams},(_,i)=>'Team '+(i+1)), picks: [], rosterSlots });
     draftState.activeLeague = draftState.leagues.length - 1;
   }
   saveDraftState();

@@ -1545,6 +1545,9 @@
   .trade-ctx-list::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 2px; }
   .trade-ctx-item { padding: 6px 12px; font-family: var(--font-mono); font-size: 11px; color: var(--text); cursor: pointer; white-space: nowrap; }
   .trade-ctx-item:hover { background: var(--bg-3); }
+  .trade-has-sub { position: relative; }
+  .trade-ctx-submenu { display: none; position: absolute; left: 100%; top: -4px; min-width: 180px; max-height: 280px; overflow-y: auto; background: var(--bg-2,#f5f3ee); border: 1px solid var(--border,#d0cdc6); border-radius: 6px; box-shadow: 0 4px 16px rgba(0,0,0,0.12); z-index: 1001; }
+  .trade-has-sub:hover .trade-ctx-submenu { display: block; }
   .draft-ctx-menu { position: fixed; z-index: 9999; background: var(--bg-2); border: 1px solid var(--border-2); border-radius: 5px; padding: 4px 0; min-width: 160px; box-shadow: 0 4px 14px rgba(0,0,0,0.15); font-size: 11px; }
   .draft-ctx-menu div { padding: 7px 14px; cursor: pointer; color: var(--text); white-space: nowrap; }
   .draft-ctx-menu div:hover { background: var(--bg-3); }
