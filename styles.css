@@ -1525,7 +1525,7 @@
     border-bottom: 1px solid var(--border); border-top: 1px solid var(--border);
   }
   .draft-player-row {
-    display: flex; flex-direction: column; padding: 4px 6px;
+    display: flex; flex-direction: column; padding: 6px 8px;
     cursor: pointer; border-bottom: 1px solid var(--border);
     transition: background 0.1s;
   }
@@ -1562,7 +1562,7 @@
   .draft-player-row.drafted .draft-player-name { text-decoration: line-through; }
   .draft-player-meta {
     font-family: var(--font-mono); font-size: 9px; color: var(--text-3);
-    display: flex; justify-content: space-between;
+    display: flex; justify-content: space-between; align-items: center; margin-top: 2px;
   }
 
   /* ─── Right side: board + rosters ─── */

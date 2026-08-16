@@ -3851,10 +3851,10 @@ function renderStatsView(content, players) {
       const disp = isFpts ? parseFloat(v).toFixed(1) : isPct ? `${parseFloat(v).toFixed(1)}%` : isDecimal ? parseFloat(v).toFixed(2) : Math.round(parseFloat(v));
       return `<td${isFpts ? ' style="font-weight:600;color:var(--accent);"' : ""}>${disp}</td>`;
     }).join("");
-    const short = p.team.replace(/^.+ /, "");
+    const short = TEAM_ABBR[p.team] || p.team.replace(/^.+ /, "");
     const clr = (TEAM_COLORS[p.team] || {}).border || '#888';
     const rdot = rookieTags.has(p.id) ? '<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#9333ea;margin-left:5px;vertical-align:middle;flex-shrink:0;"></span>' : '';
-    const teamBadge = `<span style="background:${clr}22;color:${clr};border:1px solid ${clr}55;border-radius:3px;padding:2px 4px;font-size:9px;font-weight:700;letter-spacing:0.04em;white-space:nowrap;text-align:center;display:inline-block;min-width:32px;">${short}</span>`;
+    const teamBadge = `<span style="background:${clr}22;color:${clr};border:1px solid ${clr}55;border-radius:3px;padding:3px 4px;font-size:10px;font-weight:700;letter-spacing:0.04em;white-space:nowrap;text-align:center;display:inline-block;min-width:34px;">${short}</span>`;
     return `<tr><td>${p.name}${rdot}</td><td style="text-align:center;">${teamBadge}</td>${cells}</tr>`;
   }).join("");
 
@@ -3946,12 +3946,13 @@ function renderRankingsView(content, players) {
     }).join("");
 
     const teamName = isDST ? p.name : p.team;
-    const short = teamName.replace(/^.+ /, "");
+    const short = TEAM_ABBR[teamName] || teamName.replace(/^.+ /, "");
     const teamClr = (TEAM_COLORS[teamName] || {}).border || '#888';
     const rookieDot = (!isDST && !isK && rookieTags.has(p.id)) ? `<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#9333ea;margin-left:4px;flex-shrink:0;vertical-align:middle;"></span>` : '';
+    const badgeStyle = `background:${teamClr}22;color:${teamClr};border:1px solid ${teamClr}55;border-radius:3px;padding:3px 4px;font-size:10px;font-weight:700;letter-spacing:0.04em;white-space:nowrap;text-align:center;display:inline-block;min-width:34px;`;
     const teamBadge = isDST
-      ? `<span style="background:${teamClr}22;color:${teamClr};border:1px solid ${teamClr}55;border-radius:3px;padding:2px 6px;font-size:9px;font-weight:700;letter-spacing:0.04em;white-space:nowrap;text-align:center;display:inline-block;min-width:36px;">${short} D/ST</span>`
-      : `<span class="rank-team" style="display:flex;align-items:center;justify-content:center;"><span style="background:${teamClr}22;color:${teamClr};border:1px solid ${teamClr}55;border-radius:3px;padding:2px 4px;font-size:9px;font-weight:700;letter-spacing:0.04em;white-space:nowrap;min-width:28px;text-align:center;display:inline-block;">${short}</span></span>`;
+      ? `<span style="${badgeStyle}">${short}</span>`
+      : `<span class="rank-team" style="display:flex;align-items:center;justify-content:center;"><span style="${badgeStyle}">${short}</span></span>`;
     const rowAttrs = `class="rank-row${isTierLeader ? ' tier-leader' : ''}" data-player-idx="${i}" data-player-id="${p.id}"
       draggable="true"
       ondragstart="onPlayerDragStart(event,${i})"
@@ -5953,6 +5954,21 @@ function renderDraftFull(page) {
 function renderDraftPool(league, onClockPick, searchQuery) {
   const panel = document.getElementById('draft-pool-panel');
   if (!panel) return;
+
+  // If no ranking set is linked, show empty state
+  if (!league.rankingSetId) {
+    const isDstKView = window._draftPoolView === 'dstk';
+    const skillActive = !isDstKView ? 'style="font-weight:700;border-bottom:2px solid var(--accent);"' : 'style="opacity:0.6;"';
+    const dstkActive = isDstKView ? 'style="font-weight:700;border-bottom:2px solid var(--accent);"' : 'style="opacity:0.6;"';
+    panel.innerHTML =
+      '<div class="draft-pool-header"><span class="draft-pool-title">Available Players</span><div style="display:flex;gap:2px;"><button class="view-btn" ' + skillActive + ' onclick="setDraftPoolView(\'skill\')">Skill</button><button class="view-btn" ' + dstkActive + ' onclick="setDraftPoolView(\'dstk\')">D/ST+K</button></div><span class="draft-pool-count">—</span></div>' +
+      '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--text-3);padding:32px 12px;text-align:center;">' +
+      '<div style="font-size:11px;font-weight:600;color:var(--text-2);">No rankings linked</div>' +
+      '<div style="font-size:10px;line-height:1.5;">Edit this league to import<br>a ranking set.</div>' +
+      '</div>';
+    return;
+  }
+
   const byPos = getDraftPoolByPos();
   const draftedIds = new Set((league.picks || []).map(pk => pk.playerId));
   const canDraft = onClockPick !== null;
