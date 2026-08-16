@@ -1959,7 +1959,7 @@ function renderPlayerRow(p, data, cols) {
   const hasRookieDot = !p.misc && rookieTags.has(p.id);
   const nameCell = p.misc
     ? `<td><span class="misc-name">${p.name}</span></td>`
-    : `<td><div style="position:relative;display:flex;align-items:center;"><input type="text" value="${p.name}" placeholder="player name" spellcheck="false" style="flex:1;min-width:0;${hasRookieDot ? 'padding-right:14px;' : ''}" oninput="onPlayerName('${p.id}',this.value)">${hasRookieDot ? '<span style="position:absolute;right:4px;top:50%;transform:translateY(-50%);width:6px;height:6px;border-radius:50%;background:#9333ea;pointer-events:none;flex-shrink:0;"></span>' : ''}</div></td>`;
+    : `<td><div style="display:flex;align-items:center;gap:3px;"><input type="text" value="${p.name}" size="${Math.max(1, p.name.length)}" placeholder="player name" spellcheck="false" style="flex:0 1 auto;min-width:0;" oninput="onPlayerName('${p.id}',this.value);this.size=Math.max(1,this.value.length)">${hasRookieDot ? '<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#9333ea;flex-shrink:0;"></span>' : ''}<span style="flex:1;"></span></div></td>`;
 
   const posCell = p.misc
     ? `<td class="col-pos-cell"><span class="misc-pos">${p.pos}</span></td>`
