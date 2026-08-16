@@ -1956,12 +1956,10 @@ function renderPlayerRow(p, data, cols) {
     </td>`;
   }).join("");
 
-  const rookieDot = !p.misc && rookieTags.has(p.id)
-    ? `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#9333ea;flex-shrink:0;"></span>`
-    : '';
+  const hasRookieDot = !p.misc && rookieTags.has(p.id);
   const nameCell = p.misc
     ? `<td><span class="misc-name">${p.name}</span></td>`
-    : `<td><div style="display:flex;align-items:center;gap:4px;"><input type="text" value="${p.name}" placeholder="player name" spellcheck="false" style="flex:1;min-width:0;" oninput="onPlayerName('${p.id}',this.value)">${rookieDot}</div></td>`;
+    : `<td><div style="position:relative;display:flex;align-items:center;"><input type="text" value="${p.name}" placeholder="player name" spellcheck="false" style="flex:1;min-width:0;${hasRookieDot ? 'padding-right:14px;' : ''}" oninput="onPlayerName('${p.id}',this.value)">${hasRookieDot ? '<span style="position:absolute;right:4px;top:50%;transform:translateY(-50%);width:6px;height:6px;border-radius:50%;background:#9333ea;pointer-events:none;flex-shrink:0;"></span>' : ''}</div></td>`;
 
   const posCell = p.misc
     ? `<td class="col-pos-cell"><span class="misc-pos">${p.pos}</span></td>`
@@ -3856,8 +3854,8 @@ function renderStatsView(content, players) {
     const short = p.team.replace(/^.+ /, "");
     const clr = (TEAM_COLORS[p.team] || {}).border || '#888';
     const rdot = rookieTags.has(p.id) ? '<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#9333ea;margin-left:5px;vertical-align:middle;flex-shrink:0;"></span>' : '';
-    const teamBadge = `<span style="background:${clr}22;color:${clr};border:1px solid ${clr}55;border-radius:3px;padding:2px 6px;font-size:9px;font-weight:700;letter-spacing:0.04em;white-space:nowrap;text-align:center;display:inline-block;">${short}</span>`;
-    return `<tr><td>${p.name}${rdot}</td><td>${teamBadge}</td>${cells}</tr>`;
+    const teamBadge = `<span style="background:${clr}22;color:${clr};border:1px solid ${clr}55;border-radius:3px;padding:2px 4px;font-size:9px;font-weight:700;letter-spacing:0.04em;white-space:nowrap;text-align:center;display:inline-block;min-width:32px;">${short}</span>`;
+    return `<tr><td>${p.name}${rdot}</td><td style="text-align:center;">${teamBadge}</td>${cells}</tr>`;
   }).join("");
 
   content.innerHTML = `
@@ -3906,7 +3904,7 @@ function renderRankingsView(content, players) {
   let html = `<div class="rankings-list" id="rankings-list">
     <div class="rank-row" style="cursor:default;background:var(--bg-3);border-bottom:1px solid var(--border-2);pointer-events:none;position:sticky;top:0;z-index:10;">
       <span class="rank-num"></span>
-      <div style="flex:0 0 ${isDST || isK ? '24%' : '12%'};font-size:10px;color:var(--text-3);letter-spacing:0.08em;text-transform:uppercase;">${headerLabel}</div>
+      <div style="flex:0 0 ${isDST ? '24%' : '12%'};font-size:10px;color:var(--text-3);letter-spacing:0.08em;text-transform:uppercase;">${headerLabel}</div>
       ${isDST ? '' : '<span class="rank-team" style="font-size:10px;color:var(--text-3);letter-spacing:0.08em;text-transform:uppercase;">Team</span>'}
       <div class="rank-stats">${headerCells}</div>
     </div>`;
@@ -3952,8 +3950,8 @@ function renderRankingsView(content, players) {
     const teamClr = (TEAM_COLORS[teamName] || {}).border || '#888';
     const rookieDot = (!isDST && !isK && rookieTags.has(p.id)) ? `<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#9333ea;margin-left:4px;flex-shrink:0;vertical-align:middle;"></span>` : '';
     const teamBadge = isDST
-      ? `<span style="background:${teamClr}22;color:${teamClr};border:1px solid ${teamClr}55;border-radius:3px;padding:2px 6px;font-size:9px;font-weight:700;letter-spacing:0.04em;white-space:nowrap;text-align:center;">${short} D/ST</span>`
-      : `<span class="rank-team" style="background:${teamClr}22;color:${teamClr};border:1px solid ${teamClr}55;border-radius:3px;padding:2px 6px;font-size:9px;font-weight:700;letter-spacing:0.04em;white-space:nowrap;">${short}</span>`;
+      ? `<span style="background:${teamClr}22;color:${teamClr};border:1px solid ${teamClr}55;border-radius:3px;padding:2px 6px;font-size:9px;font-weight:700;letter-spacing:0.04em;white-space:nowrap;text-align:center;display:inline-block;min-width:36px;">${short} D/ST</span>`
+      : `<span class="rank-team" style="display:flex;align-items:center;justify-content:center;"><span style="background:${teamClr}22;color:${teamClr};border:1px solid ${teamClr}55;border-radius:3px;padding:2px 4px;font-size:9px;font-weight:700;letter-spacing:0.04em;white-space:nowrap;min-width:28px;text-align:center;display:inline-block;">${short}</span></span>`;
     const rowAttrs = `class="rank-row${isTierLeader ? ' tier-leader' : ''}" data-player-idx="${i}" data-player-id="${p.id}"
       draggable="true"
       ondragstart="onPlayerDragStart(event,${i})"
@@ -5853,18 +5851,40 @@ function buildPickOrder(numTeams, numRounds, draftType) {
 // Returns { QB: [...], RB: [...], WR: [...], TE: [...] }
 // Each array is ordered by rankings with tier info, fpts attached
 function getDraftPoolByPos() {
-  const result = { QB: [], RB: [], WR: [], TE: [] };
-  ['QB','RB','WR','TE'].forEach(pos => {
-    const players = getPlayersForPos(pos).map(enrichPlayer);
-    const ordered = getRankOrder(pos, players);
-    const tierIds = getTiers(pos);
-    let tierNum = 1;
-    ordered.forEach((p, i) => {
-      if (i > 0 && tierIds.includes(p.id)) tierNum++;
-      const { fpts } = calcFpts(p);
-      result[pos].push({ ...p, posTier: tierNum, tierBreak: i > 0 && tierIds.includes(p.id), fpts: parseFloat(fpts) });
-    });
+  const league = getActiveLeague();
+  const linkedSetId = league ? league.rankingSetId : null;
+  const linkedSetIdx = linkedSetId ? rankingSets.findIndex(s => s.id === linkedSetId) : -1;
+  const useRankings = linkedSetIdx >= 0;
+
+  // Temporarily override active ranking set if linked
+  const savedIdx = activeRankingSetIdx;
+  if (useRankings) activeRankingSetIdx = linkedSetIdx;
+
+  const result = { QB: [], RB: [], WR: [], TE: [], DST: [], K: [] };
+  ['QB','RB','WR','TE','DST','K'].forEach(pos => {
+    const rawPlayers = getPlayersForPos(pos);
+    if (useRankings) {
+      const players = (['DST','K'].includes(pos)) ? rawPlayers : rawPlayers.map(enrichPlayer);
+      const ordered = getRankOrder(pos, players);
+      const tierIds = getTiers(pos);
+      let tierNum = 1;
+      ordered.forEach((p, i) => {
+        if (i > 0 && tierIds.includes(p.id)) tierNum++;
+        const fpts = (['DST','K'].includes(pos)) ? 0 : parseFloat(calcFpts(p).fpts);
+        result[pos].push({ ...p, posTier: tierNum, tierBreak: i > 0 && tierIds.includes(p.id), fpts });
+      });
+    } else {
+      // No linked ranking set — sort by fpts, no tiers
+      const players = (['DST','K'].includes(pos)) ? rawPlayers : rawPlayers.map(enrichPlayer);
+      players.forEach(p => {
+        const fpts = (['DST','K'].includes(pos)) ? 0 : parseFloat(calcFpts(p).fpts);
+        result[pos].push({ ...p, posTier: 1, tierBreak: false, fpts });
+      });
+      result[pos].sort((a, b) => (b.fpts || 0) - (a.fpts || 0));
+    }
   });
+
+  activeRankingSetIdx = savedIdx;
   return result;
 }
 
@@ -5954,37 +5974,41 @@ function renderDraftPool(league, onClockPick, searchQuery) {
     if (['QB','RB','WR','TE','K','D/ST'].includes(s)) slotCounts[s] = (slotCounts[s] || 0) + 1;
   });
 
-  const posOrder = ['QB','RB','WR','TE'];
-  const posClass = { QB:'pos-qb', RB:'pos-rb', WR:'pos-wr', TE:'pos-te' };
+  const isDstKView = window._draftPoolView === 'dstk';
+  const posOrder = isDstKView ? ['DST','K'] : ['QB','RB','WR','TE'];
+  const posClass = { QB:'pos-qb', RB:'pos-rb', WR:'pos-wr', TE:'pos-te', DST:'pos-dst', K:'pos-k' };
 
   let colsHtml = '';
   posOrder.forEach(pos => {
-    const players = byPos[pos];
-    // My picks count for this pos
-    const myCount = myPosCounts[pos] || 0;
-    const slotCount = slotCounts[pos] || 0;
+    const players = byPos[pos] || [];
+    const myCount = myPosCounts[pos] || myPosCounts['D/ST'] || 0;
+    const slotCount = slotCounts[pos] || slotCounts['D/ST'] || 0;
     const needsBadge = slotCount > 0 ? '<span style="font-size:9px;font-weight:600;opacity:0.85;">' + myCount + '/' + slotCount + '</span>' : '';
     const q = (searchQuery || '').toLowerCase().trim();
-    let colHtml = '<div class="draft-pos-col"><div class="draft-pos-col-header ' + posClass[pos] + '"><span>' + pos + '</span>' + needsBadge + '</div><div class="draft-pos-col-scroll">';
+    let colHtml = '<div class="draft-pos-col"><div class="draft-pos-col-header ' + (posClass[pos] || '') + '"><span>' + pos + '</span>' + needsBadge + '</div><div class="draft-pos-col-scroll">';
+    const useRankings = league.rankingSetId;
     let lastTier = null;
     players.forEach(p => {
-      if (p.posTier !== lastTier) {
+      if (useRankings && p.posTier !== lastTier) {
         colHtml += '<div class="draft-tier-label">Tier ' + p.posTier + '</div>';
         lastTier = p.posTier;
       }
-      if (q && !p.name.toLowerCase().includes(q) && !p.team.toLowerCase().includes(q)) return;
+      const teamName = pos === 'DST' ? p.name : p.team;
+      const searchName = (p.name || '').toLowerCase();
+      const searchTeam = (teamName || '').toLowerCase();
+      if (q && !searchName.includes(q) && !searchTeam.includes(q)) return;
       const isDrafted = draftedIds.has(p.id);
-      const short = p.team.replace(/^.+ /, '');
-      const displayName = formatInitialLast(p.name);
-      const fptsDisp = isNaN(p.fpts) ? '—' : p.fpts.toFixed(0);
+      const short = teamName.replace(/^.+ /, '');
+      const displayName = pos === 'DST' ? (short + ' D/ST') : formatInitialLast(p.name);
+      const fptsDisp = isNaN(p.fpts) ? '—' : (p.fpts > 0 ? p.fpts.toFixed(0) : '—');
       const safeId = p.id.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-      const dotColor = (TEAM_COLORS[p.team] || {}).border || '#888';
-      const rookieTag = rookieTags.has(p.id) ? '<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#9333ea;margin-left:3px;flex-shrink:0;vertical-align:middle;"></span>' : '';
-      colHtml += '<div class="draft-player-row' + (isDrafted ? ' drafted' : '') + '" data-player-id="' + p.id + '" data-name="' + p.name.replace(/"/g,'&quot;') + '"' +
+      const dotColor = (TEAM_COLORS[teamName] || {}).border || '#888';
+      const rookieTag = (pos !== 'DST' && rookieTags.has(p.id)) ? '<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#9333ea;margin-left:3px;flex-shrink:0;vertical-align:middle;"></span>' : '';
+      colHtml += '<div class="draft-player-row' + (isDrafted ? ' drafted' : '') + '" data-player-id="' + p.id + '" data-name="' + (p.name||'').replace(/"/g,'&quot;') + '"' +
         (isDrafted ? ' onclick="highlightBoardPick(this)" oncontextmenu="draftCtxFromEl(event,this)" title="Click to locate on board"' :
           (canDraft ? ' onclick="draftPlayer(\'' + safeId + '\')" title="Draft ' + p.name + '"' : '')) + '>' +
-        '<div class="draft-player-name"><span style="background:' + dotColor + '22;color:' + dotColor + ';border:1px solid ' + dotColor + '55;border-radius:2px;padding:0 3px;font-size:8px;font-weight:700;margin-right:4px;flex-shrink:0;white-space:nowrap;">' + short + '</span>' + displayName + rookieTag + '</div>' +
-        '<div class="draft-player-meta"><span>' + short + '</span><span>' + fptsDisp + '</span></div>' +
+        '<div class="draft-player-name">' + displayName + rookieTag + '</div>' +
+        '<div class="draft-player-meta"><span style="background:' + dotColor + '22;color:' + dotColor + ';border:1px solid ' + dotColor + '55;border-radius:2px;padding:0 4px;font-size:8px;font-weight:700;flex-shrink:0;white-space:nowrap;min-width:22px;text-align:center;">' + short + '</span><span>' + fptsDisp + '</span></div>' +
         '</div>';
     });
     if (players.length === 0) colHtml += '<div style="padding:12px 6px;text-align:center;color:var(--text-3);font-size:10px;">No players</div>';
@@ -5993,10 +6017,21 @@ function renderDraftPool(league, onClockPick, searchQuery) {
   });
 
   const qGlobal = (searchQuery || '').replace(/"/g,'&quot;');
+  const skillActive = !isDstKView ? 'style="font-weight:700;border-bottom:2px solid var(--accent);"' : 'style="opacity:0.6;"';
+  const dstkActive = isDstKView ? 'style="font-weight:700;border-bottom:2px solid var(--accent);"' : 'style="opacity:0.6;"';
   panel.innerHTML =
-    '<div class="draft-pool-header"><span class="draft-pool-title">Available Players</span><span class="draft-pool-count">' + available + ' / ' + total + '</span></div>' +
+    '<div class="draft-pool-header"><span class="draft-pool-title">Available Players</span><div style="display:flex;gap:2px;"><button class="view-btn" ' + skillActive + ' onclick="setDraftPoolView(\'skill\')">Skill</button><button class="view-btn" ' + dstkActive + ' onclick="setDraftPoolView(\'dstk\')">D/ST+K</button></div><span class="draft-pool-count">' + available + ' / ' + total + '</span></div>' +
     '<div class="draft-pool-search"><input type="text" id="draft-search" placeholder="Search players or teams..." value="' + qGlobal + '" oninput="onDraftSearch(this.value)" autocomplete="off"><button class="draft-search-clear' + (qGlobal ? ' visible' : '') + '" onclick="clearDraftSearch()" tabindex="-1">&times;</button></div>' +
     '<div class="draft-pool-cols">' + colsHtml + '</div>';
+}
+
+function setDraftPoolView(v) {
+  window._draftPoolView = v;
+  const league = getActiveLeague();
+  if (!league) return;
+  const pickOrder = buildPickOrder(league.numTeams, league.numRounds, league.draftType || 'snake');
+  const onClockPick = pickOrder[getNextPickIdx(league, pickOrder)] || null;
+  renderDraftPool(league, onClockPick, window._draftSearchQuery || '');
 }
 
 // ─── Draft board ───
@@ -6024,8 +6059,10 @@ function renderDraftBoard(league, pickOrder, currentPickIdx, onClockPick) {
   let html = '<table class="draft-board"><thead><tr><th class="round-label-th"></th>';
   for (let t = 0; t < league.numTeams; t++) {
     const isMine = t === league.myPick - 1;
-    const displayNameFallback = isMine ? (localStorage.getItem('ff_display_name') || 'Team ' + (t+1)) : 'Team ' + (t+1);
-    html += '<th class="' + (isMine ? 'my-team-col' : '') + '" ondblclick="startTeamNameEdit(' + t + ', this, event)" title="Double-click to rename">' + (league.teamNames[t] || displayNameFallback) + '</th>';
+    const storedName = league.teamNames[t] || '';
+    const isGeneric = /^Team \d+$/.test(storedName);
+    const displayNameFallback = isMine ? (localStorage.getItem('ff_display_name') || storedName || 'Team ' + (t+1)) : (storedName || 'Team ' + (t+1));
+    html += '<th class="' + (isMine ? 'my-team-col' : '') + '" ondblclick="startTeamNameEdit(' + t + ', this, event)" title="Double-click to rename">' + (isMine && isGeneric ? displayNameFallback : (storedName || 'Team ' + (t+1))) + '</th>';
   }
   html += '</tr></thead><tbody>';
 
@@ -6313,6 +6350,7 @@ function openDraftSetupModal(editIdx) {
     '<div class="draft-setup-field"><label>Your Draft Position</label><select id="ds-mypick">' + myPickOpts + '</select></div>' +
     '<div class="draft-setup-field"><label>Rounds</label><select id="ds-rounds" onchange="dsBenchUpdate()">' + numRoundsOpts + '</select></div>' +
     '<div class="draft-setup-field"><label>Draft Type</label><div style="display:flex;gap:8px;"><button id="ds-snake-btn" class="view-btn ' + (draftTypeVal === 'snake' ? 'active' : '') + '" onclick="setDsType(\'snake\')">Snake</button><button id="ds-linear-btn" class="view-btn ' + (draftTypeVal !== 'snake' ? 'active' : '') + '" onclick="setDsType(\'linear\')">Linear</button></div></div>' +
+    '<div class="draft-setup-field"><label>Import Rankings From</label><select id="ds-ranking-set" style="width:100%;"><option value="">— No rankings (blank) —</option>' + rankingSets.map((s, i) => '<option value="' + s.id + '"' + (existing && existing.rankingSetId === s.id ? ' selected' : '') + '>' + s.name + '</option>').join('') + '</select></div>' +
     '<div class="draft-setup-section-title">Roster Slots</div>' +
     '<div class="draft-roster-builder">' +
     '<div class="draft-roster-builder-cell"><span class="draft-pos-badge" style="background:#f0c8c8;color:#b03030;border:1px solid #e05252;">QB</span>' + stepperHtml('ds-pos-QB', pc.QB, 0) + '</div>' +
@@ -6362,6 +6400,7 @@ function saveDraftLeague(editIdx) {
     'D/ST': parseInt(document.getElementById('ds-pos-DST')?.value)||0,
   };
   const draftType = document.getElementById('ds-snake-btn')?.classList.contains('active') ? 'snake' : 'linear';
+  const rankingSetId = document.getElementById('ds-ranking-set')?.value || null;
   const starterSlots = posCountsToSlots(pc);
   const benchCount = Math.max(0, numRounds - starterSlots.length);
   const rosterSlots = [...starterSlots, ...Array(benchCount).fill('BN')];
@@ -6369,12 +6408,12 @@ function saveDraftLeague(editIdx) {
   if (isEdit) {
     const ex = draftState.leagues[editIdx];
     ex.name = name; ex.numTeams = numTeams; ex.myPick = myPick; ex.numRounds = numRounds;
-    ex.rosterSlots = rosterSlots; ex.draftType = draftType;
+    ex.rosterSlots = rosterSlots; ex.draftType = draftType; ex.rankingSetId = rankingSetId;
     if (!ex.teamNames) ex.teamNames = [];
     while (ex.teamNames.length < numTeams) ex.teamNames.push('Team ' + (ex.teamNames.length + 1));
     ex.teamNames.length = numTeams;
   } else {
-    draftState.leagues.push({ name, numTeams, myPick, numRounds, draftType, teamNames: Array.from({length:numTeams},(_,i)=>'Team '+(i+1)), picks: [], rosterSlots });
+    draftState.leagues.push({ name, numTeams, myPick, numRounds, draftType, rankingSetId, teamNames: Array.from({length:numTeams},(_,i)=>'Team '+(i+1)), picks: [], rosterSlots });
     draftState.activeLeague = draftState.leagues.length - 1;
   }
   saveDraftState();
