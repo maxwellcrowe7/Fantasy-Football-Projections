@@ -434,6 +434,12 @@ function updateAuthBtn() {
   if (testTab) testTab.style.display = currentUser?.email === ADMIN_EMAIL ? '' : 'none';
 }
 
+function onSeasonChange(season) {
+  // Stub — season switching logic TBD (what carries over vs resets)
+  const label = document.getElementById('sidebar-season-label');
+  if (label) label.textContent = season + ' season · all 32 teams';
+}
+
 function toggleAuthDropdown() {
   if (!currentUser) { showLogin(); return; }
   const dd = document.getElementById('auth-dropdown');
@@ -1959,7 +1965,7 @@ function renderPlayerRow(p, data, cols) {
   const hasRookieDot = !p.misc && rookieTags.has(p.id);
   const nameCell = p.misc
     ? `<td><span class="misc-name">${p.name}</span></td>`
-    : `<td><div style="display:flex;align-items:center;gap:4px;"><span contenteditable="true" spellcheck="false" data-id="${p.id}" style="outline:none;cursor:text;white-space:nowrap;min-width:4px;" onblur="onPlayerName('${p.id}',(this.textContent||'').trim())" onkeydown="if(event.key==='Enter'||event.key==='Tab'){event.preventDefault();this.blur();}" onpaste="event.preventDefault();document.execCommand('insertText',false,(event.clipboardData||window.clipboardData).getData('text'))">${p.name}</span>${hasRookieDot ? '<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#9333ea;flex-shrink:0;margin-top:-1px;"></span>' : ''}</div></td>`;
+    : `<td><span contenteditable="true" spellcheck="false" data-id="${p.id}" class="player-name-edit" onblur="onPlayerName('${p.id}',(this.textContent||'').trim())" onkeydown="if(event.key==='Enter'||event.key==='Tab'){event.preventDefault();this.blur();}" onpaste="event.preventDefault();document.execCommand('insertText',false,(event.clipboardData||window.clipboardData).getData('text'))">${p.name}</span>${hasRookieDot ? '<span class="rookie-dot"></span>' : ''}</td>`;
 
   const posCell = p.misc
     ? `<td class="col-pos-cell"><span class="misc-pos">${p.pos}</span></td>`
@@ -4171,7 +4177,8 @@ function onDrop(e, targetType, targetIdx) {
   const inTopHalf = e.clientY < rect.top + rect.height / 2;
   _clearDropIndicator();
 
-  const players = getPlayersForPos(rankPos).map(enrichPlayer);
+  const hp = getActiveHiddenPlayers();
+  const players = getPlayersForPos(rankPos).map(enrichPlayer).filter(p => !hp.has(p.id));
   const ordered = getRankOrder(rankPos, players);
   let tiers = getTiers(rankPos); // array of player IDs that start a tier
 
@@ -6073,16 +6080,21 @@ function renderDraftBoard(league, pickOrder, currentPickIdx, onClockPick) {
     posPickNum[idx] = posCounts[pk.pos];
   });
 
+  const myDisplayName = localStorage.getItem('ff_display_name') || '';
   let html = '<table class="draft-board"><thead><tr><th class="round-label-th"></th>';
   for (let t = 0; t < league.numTeams; t++) {
     const isMine = t === league.myPick - 1;
     const storedName = league.teamNames[t] || '';
-    const isGeneric = /^Team \d+$/.test(storedName);
-    const displayNameFallback = isMine ? (localStorage.getItem('ff_display_name') || storedName || 'Team ' + (t+1)) : (storedName || 'Team ' + (t+1));
-    html += '<th class="' + (isMine ? 'my-team-col' : '') + '" ondblclick="startTeamNameEdit(' + t + ', this, event)" title="Double-click to rename">' + (isMine && isGeneric ? displayNameFallback : (storedName || 'Team ' + (t+1))) + '</th>';
+    if (isMine) {
+      const label = myDisplayName || storedName || 'Team ' + (t + 1);
+      html += '<th class="my-team-col" title="Change in profile settings">' + label + '</th>';
+    } else {
+      html += '<th ondblclick="startTeamNameEdit(' + t + ', this, event)" title="Double-click to rename">' + (storedName || 'Team ' + (t + 1)) + '</th>';
+    }
   }
   html += '</tr></thead><tbody>';
 
+  const tradedPicks = league.tradedPicks || {};
   for (let r = 0; r < league.numRounds; r++) {
     const ltr = (league.draftType === 'linear') ? true : (r % 2 === 0);
     const dirArrow = ltr ? '→' : '←';
@@ -6094,22 +6106,28 @@ function renderDraftBoard(league, pickOrder, currentPickIdx, onClockPick) {
       const isClock = onClockPick && globalIdx === currentPickIdx;
       const filled = draftedMap[globalIdx];
       const cls = (isMine ? ' my-pick-slot' : '') + (isClock ? ' clock-slot' : '');
+      const trade = tradedPicks[globalIdx];
+      const tradeBar = trade
+        ? '<div class="pick-trade-bar"><span class="pick-trade-arrow">→</span>' + (league.teamNames[trade.toTeam] || 'Team ' + (trade.toTeam + 1)) + '</div>'
+        : '';
       if (filled) {
         const color = DRAFT_POS_COLORS[filled.pos] || '#888';
-        const short = TEAM_ABBR[filled.team] || (filled.team || '').replace(/^.+ /, '');
         const names = splitFirstLast(filled.name);
         const bg = DRAFT_POS_BG[filled.pos] || '#f0f0f0';
         const overallPick = globalIdx + 1;
         const posPick = posPickNum[globalIdx] || '';
         const teamNickname = (filled.team || '').replace(/^.+ /, '');
-        html += '<td class="' + cls + '" data-player-id="' + filled.playerId + '" data-name="' + filled.name.replace(/"/g,'&quot;') + '" data-pos="' + filled.pos + '" oncontextmenu="draftCtxFromEl(event,this)" style="background:' + bg + ' !important;">' +
+        html += '<td class="' + cls + '" data-pick-idx="' + globalIdx + '" data-player-id="' + filled.playerId + '" data-name="' + filled.name.replace(/"/g,'&quot;') + '" data-pos="' + filled.pos + '" oncontextmenu="showPickTradeMenu(event,' + globalIdx + ');return false;" style="background:' + bg + ' !important;">' +
+          tradeBar +
           '<div class="draft-slot-filled">' +
           '<div class="draft-slot-first">' + names.first + '</div>' +
           '<div class="draft-slot-last">' + names.last + '</div>' +
           '<div class="draft-slot-meta"><span class="draft-slot-meta-team">' + teamNickname + '</span><span class="draft-slot-meta-picks">' + overallPick + '/' + posPick + '</span></div>' +
           '</div></td>';
       } else {
-        html += '<td class="' + cls + '"><div class="draft-slot-empty' + (isClock ? ' is-clock' : '') + '">' + (isClock ? '●' : '') + '</div></td>';
+        html += '<td class="' + cls + '" data-pick-idx="' + globalIdx + '" oncontextmenu="showPickTradeMenu(event,' + globalIdx + ');return false;">' +
+          tradeBar +
+          '<div class="draft-slot-empty' + (isClock ? ' is-clock' : '') + '">' + (isClock ? '●' : '') + '</div></td>';
       }
     }
     html += '</tr>';
@@ -6138,7 +6156,14 @@ function renderDraftRosters(league, pickOrder) {
   const wrap = document.getElementById('draft-rosters-wrap');
   if (!wrap) return;
   const teamPicks = Array.from({ length: league.numTeams }, () => []);
-  (league.picks || []).forEach(pk => { const idx = pk.pickIndex !== undefined ? pk.pickIndex : pk.pickNum - 1; const po = pickOrder[idx]; if (po) teamPicks[po.teamIdx].push(pk); });
+  const tradedPicksR = league.tradedPicks || {};
+  (league.picks || []).forEach(pk => {
+    const idx = pk.pickIndex !== undefined ? pk.pickIndex : pk.pickNum - 1;
+    const po = pickOrder[idx];
+    if (!po) return;
+    const trade = tradedPicksR[idx];
+    teamPicks[trade ? trade.toTeam : po.teamIdx].push(pk);
+  });
   const slots = league.rosterSlots || DRAFT_ROSTER_SLOTS;
 
   let header = '';
@@ -6165,6 +6190,30 @@ function renderDraftRosters(league, pickOrder) {
     }
     html += '</tr>';
   });
+
+  // Overflow rows — players that don't fit in any defined roster slot
+  const overflowByTeam = teamPicks.map(picks => getOverflowPicks(picks, slots));
+  const maxOverflow = Math.max(4, ...overflowByTeam.map(o => o.length));
+  if (maxOverflow > 0) {
+    html += '<tr><td colspan="' + (league.numTeams + 1) + '" class="roster-overflow-divider">overflow</td></tr>';
+    for (let row = 0; row < maxOverflow; row++) {
+      html += '<tr class="roster-overflow-row"><td class="slot-label roster-overflow-label">+</td>';
+      for (let t = 0; t < league.numTeams; t++) {
+        const isMine = t === league.myPick - 1;
+        const pk = overflowByTeam[t][row];
+        const cls = isMine ? ' my-pick-slot' : '';
+        if (pk) {
+          const color = DRAFT_POS_COLORS[pk.pos] || '#888';
+          const displayName = formatInitialLast(pk.name);
+          html += '<td class="' + cls + ' roster-overflow-cell"><div class="roster-slot-name"><span class="draft-slot-pos-dot" style="background:' + color + ';"></span>' + displayName + '</div></td>';
+        } else {
+          html += '<td class="' + cls + ' roster-overflow-cell"><span class="roster-slot-empty">—</span></td>';
+        }
+      }
+      html += '</tr>';
+    }
+  }
+
   html += '</tbody></table>';
   wrap.innerHTML = html;
 }
@@ -6184,6 +6233,15 @@ function getUsedForTeam(teamPicksList, slots, currentSlotIdx) {
     if (match) used.add(match.playerId);
   }
   return used;
+}
+
+function getOverflowPicks(teamPicksList, slots) {
+  const used = new Set();
+  for (const slot of slots) {
+    const match = teamPicksList.filter(pk => matchesRosterSlot(pk.pos, slot)).find(pk => !used.has(pk.playerId));
+    if (match) used.add(match.playerId);
+  }
+  return teamPicksList.filter(pk => !used.has(pk.playerId));
 }
 
 function getNextPickIdx(league, pickOrder) {
@@ -6470,40 +6528,106 @@ function highlightBoardPick(el) {
 }
 
 function draftCtxFromEl(e, el) {
-  showDraftCtxMenu(e, el.dataset.playerId, el.dataset.name);
+  // Pool card right-click — find pick index by player id and delegate
+  const league = getActiveLeague();
+  if (!league) return;
+  const playerId = el.dataset.playerId;
+  const pk = (league.picks || []).find(p => p.playerId === playerId);
+  if (!pk) return;
+  const idx = pk.pickIndex !== undefined ? pk.pickIndex : pk.pickNum - 1;
+  showPickTradeMenu(e, idx);
 }
 
-function showDraftCtxMenu(e, playerId, playerName) {
+function showPickTradeMenu(e, globalIdx) {
   e.preventDefault();
   e.stopPropagation();
   document.querySelectorAll('.draft-ctx-menu').forEach(m => m.remove());
+
+  const league = getActiveLeague();
+  if (!league) return;
+  const pickOrder = buildPickOrder(league.numTeams, league.numRounds, league.draftType || 'snake');
+  const po = pickOrder[globalIdx];
+  if (!po) return;
+
+  const tradedPicks = league.tradedPicks || {};
+  const trade = tradedPicks[globalIdx];
+  const originalTeamIdx = po.teamIdx;
+  const myTeamIdx = league.myPick - 1;
+  const myDisplayName = localStorage.getItem('ff_display_name') || '';
+  const teamLabel = t => (t === myTeamIdx && myDisplayName) ? myDisplayName : (league.teamNames[t] || 'Team ' + (t + 1));
+
+  const draftedMap = {};
+  (league.picks || []).forEach(pk => { draftedMap[pk.pickIndex !== undefined ? pk.pickIndex : pk.pickNum - 1] = pk; });
+  const filled = draftedMap[globalIdx];
+
   const menu = document.createElement('div');
   menu.className = 'draft-ctx-menu';
 
-  // Label
   const label = document.createElement('div');
   label.style.cssText = 'padding:5px 14px 4px;font-size:10px;color:var(--text-3);letter-spacing:0.06em;text-transform:uppercase;border-bottom:1px solid var(--border);margin-bottom:3px;';
-  label.textContent = playerName;
+  label.textContent = 'Round ' + po.round + ' · Pick ' + po.pick;
   menu.appendChild(label);
 
-  const onlyItem = document.createElement('div');
-  onlyItem.className = 'danger';
-  onlyItem.textContent = 'Undraft this pick only';
-  onlyItem.onclick = () => { menu.remove(); undraftPlayer(playerId, false); };
-  menu.appendChild(onlyItem);
+  if (filled) {
+    const onlyItem = document.createElement('div');
+    onlyItem.className = 'danger';
+    onlyItem.textContent = 'Undraft this pick only';
+    onlyItem.onclick = () => { menu.remove(); undraftPlayer(filled.playerId, false); };
+    menu.appendChild(onlyItem);
 
-  const allItem = document.createElement('div');
-  allItem.className = 'danger';
-  allItem.textContent = 'Undraft this and all after';
-  allItem.onclick = () => { menu.remove(); undraftPlayer(playerId, true); };
-  menu.appendChild(allItem);
+    const allItem = document.createElement('div');
+    allItem.className = 'danger';
+    allItem.textContent = 'Undraft this and all after';
+    allItem.onclick = () => { menu.remove(); undraftPlayer(filled.playerId, true); };
+    menu.appendChild(allItem);
+
+    const sep = document.createElement('div');
+    sep.style.cssText = 'border-top:1px solid var(--border);margin:3px 0;';
+    menu.appendChild(sep);
+  }
+
+  if (trade) {
+    const backItem = document.createElement('div');
+    backItem.textContent = '↩ Trade back to ' + teamLabel(originalTeamIdx);
+    backItem.onclick = () => { menu.remove(); tradeBackPick(globalIdx); };
+    menu.appendChild(backItem);
+  } else {
+    const tradeHeader = document.createElement('div');
+    tradeHeader.style.cssText = 'padding:5px 14px 3px;font-size:10px;color:var(--text-3);';
+    tradeHeader.textContent = 'Trade pick to:';
+    menu.appendChild(tradeHeader);
+    for (let t = 0; t < league.numTeams; t++) {
+      if (t === originalTeamIdx) continue;
+      const item = document.createElement('div');
+      item.textContent = '→ ' + teamLabel(t);
+      item.onclick = () => { menu.remove(); tradePick(globalIdx, t); };
+      menu.appendChild(item);
+    }
+  }
 
   document.body.appendChild(menu);
-  const mw = menu.offsetWidth || 180, mh = menu.offsetHeight || 80;
+  const mw = menu.offsetWidth || 200, mh = menu.offsetHeight || 100;
   menu.style.left = (e.clientX + mw > window.innerWidth ? e.clientX - mw : e.clientX) + 'px';
   menu.style.top  = (e.clientY + mh > window.innerHeight ? e.clientY - mh : e.clientY) + 'px';
   const close = ev => { if (!menu.contains(ev.target)) { menu.remove(); document.removeEventListener('mousedown', close); } };
   setTimeout(() => document.addEventListener('mousedown', close), 0);
+}
+
+function tradePick(globalIdx, toTeamIdx) {
+  const league = getActiveLeague();
+  if (!league) return;
+  if (!league.tradedPicks) league.tradedPicks = {};
+  league.tradedPicks[globalIdx] = { toTeam: toTeamIdx };
+  saveDraftState();
+  renderDraftFullPreserveScroll();
+}
+
+function tradeBackPick(globalIdx) {
+  const league = getActiveLeague();
+  if (!league || !league.tradedPicks) return;
+  delete league.tradedPicks[globalIdx];
+  saveDraftState();
+  renderDraftFullPreserveScroll();
 }
 
 function undraftPlayer(playerId, andAllAfter) {

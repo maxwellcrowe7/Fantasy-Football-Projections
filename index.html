@@ -109,6 +109,11 @@
     <button class="nav-btn" id="nav-test" onclick="switchPage('test')" style="color:var(--amber);opacity:0.7;" title="Sandbox experiment">Test</button>
     <div class="nav-spacer"></div>
     <div style="display:flex;align-items:center;gap:16px;padding-right:12px;">
+    <select id="season-selector" onchange="onSeasonChange(this.value)" title="Season" style="background:var(--bg-2,#fff);border:1px solid var(--border,#d0cdc6);border-radius:5px;padding:3px 6px;font-size:12px;font-family:var(--font-mono);color:var(--text,#1a1a18);cursor:pointer;outline:none;">
+      <option value="2026" selected>2026</option>
+      <option value="2025">2025</option>
+      <option value="2024">2024</option>
+    </select>
     <button class="nav-btn" id="nav-share" onclick="openSharePanel()" style="font-size:12px;opacity:0.8;padding:6px 0;">Share</button>
     <button class="nav-gear" id="nav-settings" onclick="switchPage('settings')" title="Settings" style="padding:4px;">⚙</button>
     <div style="position:relative;display:flex;align-items:center;">
@@ -147,7 +152,7 @@
     <div class="sidebar" id="sidebar-panel">
       <div class="sidebar-header">
         <h1>Projections</h1>
-        <p>2025 season · all 32 teams</p>
+        <p id="sidebar-season-label">2026 season · all 32 teams</p>
       </div>
       <div class="sidebar-scroll" id="sidebar"></div>
     </div>
