@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FF Projection Tool</title>
+<title>FF Projections</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><ellipse cx='16' cy='16' rx='13' ry='9' fill='%23a0522d'/><ellipse cx='16' cy='16' rx='13' ry='9' fill='none' stroke='%23fff' stroke-width='1.5'/><line x1='16' y1='7' x2='16' y2='25' stroke='%23fff' stroke-width='1.5'/><line x1='11' y1='12' x2='21' y2='12' stroke='%23fff' stroke-width='1'/><line x1='10' y1='16' x2='22' y2='16' stroke='%23fff' stroke-width='1'/><line x1='11' y1='20' x2='21' y2='20' stroke='%23fff' stroke-width='1'/></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
@@ -102,6 +103,14 @@
 
 <div class="app" id="app-root">
   <div class="top-nav">
+    <svg class="nav-logo" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <ellipse cx="16" cy="16" rx="13" ry="9" fill="#a0522d"/>
+      <ellipse cx="16" cy="16" rx="13" ry="9" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="1.5"/>
+      <line x1="16" y1="7" x2="16" y2="25" stroke="rgba(255,255,255,0.7)" stroke-width="1.5"/>
+      <line x1="11" y1="12" x2="21" y2="12" stroke="rgba(255,255,255,0.7)" stroke-width="1"/>
+      <line x1="10" y1="16" x2="22" y2="16" stroke="rgba(255,255,255,0.7)" stroke-width="1"/>
+      <line x1="11" y1="20" x2="21" y2="20" stroke="rgba(255,255,255,0.7)" stroke-width="1"/>
+    </svg>
     <button class="nav-btn active" id="nav-projections" onclick="switchPage('projections')">Projections</button>
     <button class="nav-btn" id="nav-rankings" onclick="switchPage('rankings')">Rankings</button>
     <button class="nav-btn" id="nav-draft" onclick="switchPage('draft')">Draft</button>

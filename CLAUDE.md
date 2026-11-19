@@ -7,7 +7,7 @@ Guidance for Claude Code when working in this repository.
 FF Projection Tool — builds season-long fantasy football projections team by team (team-level stats → player shares → fantasy points). Plain HTML/CSS/JS, no build step, no package.json. Hosted on GitHub Pages; data syncs through Supabase.
 
 - `index.html` — markup/shell (login screen, app layout). Loads Supabase JS and Lucide icons from CDNs.
-- `app.js` — ALL application logic (~6,900 lines, plain globals, no modules): constants, state, Supabase sync, auth, sharing, rendering, every UI handler. This is where nearly all work happens.
+- `app.js` — ALL application logic (~7,000 lines, plain globals, no modules): constants, state, Supabase sync, auth, sharing, rendering, every UI handler. This is where nearly all work happens.
 - `styles.css` — all styling.
 - `Projections.html` — the OLD single-file, local-only version. Reference only; do not edit it as if it were live.
 - `Historical Data.csv` — source data for historical team stats, imported in-app and uploaded to Supabase.

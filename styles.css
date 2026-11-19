@@ -858,6 +858,7 @@
   .ctx-apply:hover { background: var(--accent-dim); }
 
   /* ─── Top nav ─── */
+  .nav-logo { width: 22px; height: 22px; flex-shrink: 0; margin-right: 6px; opacity: 0.9; }
   .top-nav {
     display: flex;
     align-items: center;
