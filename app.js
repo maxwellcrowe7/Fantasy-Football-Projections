@@ -5834,9 +5834,9 @@ function drawLine() {
 
 const DRAFT_STORAGE_KEY = 'ff_draft_v1';
 const DRAFT_ROSTER_SLOTS = ['QB','RB','RB','WR','WR','TE','K','D/ST'];
-const DRAFT_POS_COLORS = { QB:'#e05252', RB:'#3a9a5c', WR:'#4a90d9', TE:'#c9a800', K:'#888', 'D/ST':'#888' };
-const DRAFT_POS_BG = { QB:'#f0c8c8', RB:'#c0e8cc', WR:'#c0d8f0', TE:'#f0e094', K:'#d8d8d8', 'D/ST':'#d8d8d8' };
-const DRAFT_POS_BG_BOLD = { QB:'#e05252', RB:'#3a9a5c', WR:'#4a90d9', TE:'#c9a800', K:'#888', 'D/ST':'#888' };
+const DRAFT_POS_COLORS = { QB:'#e05252', RB:'#3a9a5c', WR:'#4a90d9', TE:'#c9a800', K:'#9b59b6', 'D/ST':'#8B4513', DST:'#8B4513' };
+const DRAFT_POS_BG = { QB:'#f0c8c8', RB:'#c0e8cc', WR:'#c0d8f0', TE:'#f0e094', K:'#e0d0f0', 'D/ST':'#e8d4c0', DST:'#e8d4c0' };
+const DRAFT_POS_BG_BOLD = { QB:'#e05252', RB:'#3a9a5c', WR:'#4a90d9', TE:'#c9a800', K:'#9b59b6', 'D/ST':'#8B4513', DST:'#8B4513' };
 
 function loadDraftState() {
   try { return JSON.parse(localStorage.getItem(DRAFT_STORAGE_KEY) || 'null') || { leagues: [], activeLeague: 0 }; }
@@ -6014,7 +6014,8 @@ function renderDraftPool(league, onClockPick, searchQuery) {
     let lastTier = null;
     players.forEach(p => {
       if (useRankings && p.posTier !== lastTier) {
-        colHtml += '<div class="draft-tier-label">Tier ' + p.posTier + '</div>';
+        const tierClr = DRAFT_POS_COLORS[pos] || '#888';
+        colHtml += '<div class="draft-tier-label" style="color:' + tierClr + ';background:' + tierClr + '18;border-top-color:' + tierClr + '55;border-bottom-color:' + tierClr + '55;">Tier ' + p.posTier + '</div>';
         lastTier = p.posTier;
       }
       const teamName = pos === 'DST' ? p.name : p.team;

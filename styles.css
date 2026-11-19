@@ -1393,7 +1393,7 @@
     user-select: none;
   }
   .rank-row.tier-leader { border-top: 1px solid var(--border); }
-  .rank-row:nth-child(even) { background: var(--bg-3); }
+  .rank-row:nth-child(even) { background: var(--bg-4); }
   .rank-row:nth-child(odd) { background: var(--bg); }
   .rank-row:hover { background: var(--bg-3); }
   .rank-row { border-bottom: 1px solid var(--border); }
