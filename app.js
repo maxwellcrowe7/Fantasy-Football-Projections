@@ -319,7 +319,8 @@ function applyFullPayload(payload) {
 async function loadFromSupabase() {
   const { data } = await sb.from('app_state').select('data').eq('app', SB_APP).eq('user_id', currentUser.id).maybeSingle();
   if (data?.data && applyFullPayload(data.data)) return true;
-  loadState();
+  // No cloud row for this user — start fresh. Do NOT fall back to localStorage,
+  // which may contain a previous user's data on a shared browser.
   return false;
 }
 
@@ -392,7 +393,21 @@ async function authSubmit() {
   if (_authMode === 'signup') msg.textContent = 'Account created — you can sign in now.';
 }
 
+function clearAppLocalStorage() {
+  // Flush any pending debounced save so it doesn't fire after sign-out.
+  clearTimeout(sbSaveTimer);
+  sbSaveTimer = null;
+  // Remove all ff_* keys (including dynamic ff_locks_* keys).
+  const toRemove = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k && k.startsWith('ff_')) toRemove.push(k);
+  }
+  toRemove.forEach(k => localStorage.removeItem(k));
+}
+
 async function signOut() {
+  clearAppLocalStorage();
   await sb.auth.signOut();
 }
 
@@ -693,7 +708,7 @@ async function returnToOwnProjections() {
 
 const STORAGE_KEY = "ff_projections_v1";
 function saveState() {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ state, selectedTeam })); } catch(e) {}
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ state, selectedTeam, userId: currentUser?.id })); } catch(e) {}
   sbSave();
 }
 function loadState() {
@@ -701,6 +716,8 @@ function loadState() {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return;
     const parsed = JSON.parse(raw);
+    // Reject cached data that belongs to a different account.
+    if (parsed.userId && currentUser?.id && parsed.userId !== currentUser.id) return;
     if (parsed.state) state = parsed.state;
     if (parsed.selectedTeam) selectedTeam = parsed.selectedTeam;
   } catch(e) {}
