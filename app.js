@@ -393,10 +393,17 @@ async function authSubmit() {
   if (_authMode === 'signup') msg.textContent = 'Account created — you can sign in now.';
 }
 
-function clearAppLocalStorage() {
-  // Flush any pending debounced save so it doesn't fire after sign-out.
-  clearTimeout(sbSaveTimer);
-  sbSaveTimer = null;
+async function flushAndClearLocalStorage() {
+  // If a debounced save is pending, execute it now so unsaved work isn't lost.
+  if (sbSaveTimer && currentUser && !viewingUser) {
+    clearTimeout(sbSaveTimer);
+    sbSaveTimer = null;
+    const payload = buildFullPayload();
+    await sb.from('app_state').upsert(
+      { user_id: currentUser.id, app: SB_APP, data: payload, updated_at: new Date().toISOString() },
+      { onConflict: 'user_id,app' }
+    );
+  }
   // Remove all ff_* keys (including dynamic ff_locks_* keys).
   const toRemove = [];
   for (let i = 0; i < localStorage.length; i++) {
@@ -407,8 +414,9 @@ function clearAppLocalStorage() {
 }
 
 async function signOut() {
-  clearAppLocalStorage();
+  await flushAndClearLocalStorage();
   await sb.auth.signOut();
+  location.reload();
 }
 
 function getInitials() {
