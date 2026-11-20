@@ -325,6 +325,10 @@ async function loadFromSupabase() {
 
 const HIST_ROW_ID = '00000000-0000-0000-0000-000000000001';
 
+function escHtml(str) {
+  return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
 async function loadHistFromSupabase() {
   const { data } = await sb.from('ff_historical_data').select('data').eq('id', HIST_ROW_ID).maybeSingle();
   if (!data?.data) return false;
@@ -580,20 +584,27 @@ async function loadShares() {
   const out = outRes.data || [];
   outEl.innerHTML = out.length === 0
     ? '<div style="font-size:12px;color:var(--text-3,#96948e);font-family:var(--font-mono);">Not shared with anyone yet.</div>'
-    : out.map(s => `
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--bg,#eceae4);border:1px solid var(--border,#d0cdc6);border-radius:6px;margin-bottom:6px;">
-          <span style="font-size:13px;font-family:var(--font-mono);color:var(--text,#1a1a18);">${s.viewer_email}</span>
-          <button onclick="removeShare('${s.id}')" style="background:none;border:none;color:var(--red,#ef4444);font-size:18px;cursor:pointer;padding:0 4px;line-height:1;" title="Remove">×</button>
-        </div>`).join('');
+    : out.map(s => {
+        const ve = escHtml(s.viewer_email);
+        const sid = escHtml(s.id);
+        return `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--bg,#eceae4);border:1px solid var(--border,#d0cdc6);border-radius:6px;margin-bottom:6px;">
+          <span style="font-size:13px;font-family:var(--font-mono);color:var(--text,#1a1a18);">${ve}</span>
+          <button data-share-id="${sid}" onclick="removeShare(this.dataset.shareId)" style="background:none;border:none;color:var(--red,#ef4444);font-size:18px;cursor:pointer;padding:0 4px;line-height:1;" title="Remove">×</button>
+        </div>`;
+      }).join('');
 
   const inc = inRes.data || [];
-  inEl.innerHTML = inc.length === 0
-    ? '<div style="font-size:12px;color:var(--text-3,#96948e);font-family:var(--font-mono);">Nobody has shared with you yet.</div>'
-    : inc.map(s => `
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--bg,#eceae4);border:1px solid var(--border,#d0cdc6);border-radius:6px;margin-bottom:6px;cursor:pointer;" onclick="viewSharedProjections('${s.owner_id}','${s.owner_email || s.owner_id}')">
-          <span style="font-size:13px;font-family:var(--font-mono);color:var(--text,#1a1a18);">${s.owner_email || s.owner_id}</span>
+  if (inc.length === 0) {
+    inEl.innerHTML = '<div style="font-size:12px;color:var(--text-3,#96948e);font-family:var(--font-mono);">Nobody has shared with you yet.</div>';
+  } else {
+    inEl.innerHTML = inc.map(s => {
+      const display = escHtml(s.owner_email || s.owner_id);
+      return `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--bg,#eceae4);border:1px solid var(--border,#d0cdc6);border-radius:6px;margin-bottom:6px;cursor:pointer;" data-owner-id="${escHtml(s.owner_id)}" data-owner-label="${display}" onclick="handleIncomingShareClick(this)">
+          <span style="font-size:13px;font-family:var(--font-mono);color:var(--text,#1a1a18);">${display}</span>
           <span style="font-size:11px;color:var(--blue,#3b82f6);font-weight:600;">View →</span>
-        </div>`).join('');
+        </div>`;
+    }).join('');
+  }
 }
 
 async function addShare() {
@@ -646,6 +657,12 @@ function applySharedPayload(payload) {
     activeScoringPreset = parseInt(payload.activeScoringPreset);
   }
   return true;
+}
+
+function handleIncomingShareClick(el) {
+  const ownerId = el.dataset.ownerId;
+  const ownerLabel = el.dataset.ownerLabel;
+  if (ownerId) viewSharedProjections(ownerId, ownerLabel);
 }
 
 async function viewSharedProjections(ownerId, ownerEmail) {
@@ -1964,8 +1981,8 @@ function renderPlayerRow(p, data, cols) {
 
   const hasRookieDot = !p.misc && rookieTags.has(p.id);
   const nameCell = p.misc
-    ? `<td><span class="misc-name">${p.name}</span></td>`
-    : `<td><span contenteditable="true" spellcheck="false" data-id="${p.id}" class="player-name-edit" onblur="onPlayerName('${p.id}',(this.textContent||'').trim())" onkeydown="if(event.key==='Enter'||event.key==='Tab'){event.preventDefault();this.blur();}" onpaste="event.preventDefault();document.execCommand('insertText',false,(event.clipboardData||window.clipboardData).getData('text'))">${p.name}</span>${hasRookieDot ? '<span class="rookie-dot"></span>' : ''}</td>`;
+    ? `<td><span class="misc-name">${escHtml(p.name)}</span></td>`
+    : `<td><span contenteditable="true" spellcheck="false" data-id="${escHtml(p.id)}" class="player-name-edit" onblur="onPlayerName('${escHtml(p.id)}',(this.textContent||'').trim())" onkeydown="if(event.key==='Enter'||event.key==='Tab'){event.preventDefault();this.blur();}" onpaste="event.preventDefault();document.execCommand('insertText',false,(event.clipboardData||window.clipboardData).getData('text'))">${escHtml(p.name)}</span>${hasRookieDot ? '<span class="rookie-dot"></span>' : ''}</td>`;
 
   const posCell = p.misc
     ? `<td class="col-pos-cell"><span class="misc-pos">${p.pos}</span></td>`
@@ -3031,7 +3048,7 @@ function buildScoringSettings() {
 
   const presetTabs = scoringPresets.map((p, i) =>
     `<button class="view-btn ${i === activeScoringPreset ? 'active' : ''}"
-      onclick="setActiveScoringPreset(${i})">${p.name}</button>`
+      onclick="setActiveScoringPreset(${i})">${escHtml(p.name)}</button>`
   ).join("");
 
   const sc = getActiveScoring();
@@ -3053,7 +3070,7 @@ function buildScoringSettings() {
       <button class="view-btn" onclick="addScoringPreset()" style="color:var(--accent);">+ New</button>
     </div>
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-      <input type="text" value="${sc.name}"
+      <input type="text" value="${escHtml(sc.name)}"
         style="background:var(--bg-3);border:1px solid var(--border-2);border-radius:3px;padding:3px 6px;font-size:11px;color:var(--text);outline:none;width:140px;"
         onchange="renameScoringPreset(this.value)"
         onblur="renameScoringPreset(this.value)">
@@ -3163,7 +3180,7 @@ function renderSettings() {
           const short = (k.team || '').replace(/^.+ /, '') || '—';
           return `<div style="display:flex;align-items:center;gap:10px;padding:6px 10px;background:var(--bg-3);border:1px solid var(--border);border-radius:4px;">
             <div style="display:flex;align-items:center;gap:6px;flex:1;">
-              <span style="font-size:12px;">${k.name}</span>
+              <span style="font-size:12px;">${escHtml(k.name)}</span>
               <span style="background:${clr}22;color:${clr};border:1px solid ${clr}55;border-radius:3px;padding:1px 5px;font-size:9px;font-weight:700;white-space:nowrap;">${short}</span>
             </div>
             <button style="flex-shrink:0;" class="add-player-btn" onclick="deleteKicker('${k.id}')" style="font-size:10px;padding:2px 8px;color:var(--red,#ef4444);border-color:var(--red,#ef4444);">Remove</button>
@@ -3296,7 +3313,7 @@ function renderScoringPresetSelector() {
   if (!el) return;
   const current = getActiveRankingSet().scoring_idx || 0;
   const opts = scoringPresets.map((p, i) =>
-    `<option value="${i}" ${i === current ? 'selected' : ''}>${p.name}</option>`
+    `<option value="${i}" ${i === current ? 'selected' : ''}>${escHtml(p.name)}</option>`
   ).join("");
   el.innerHTML = `<select onchange="setActiveScoringPresetRankings(parseInt(this.value))"
     style="background:var(--bg-3);border:1px solid var(--border-2);border-radius:4px;
@@ -3603,7 +3620,7 @@ function renderRankingSetsTabs() {
   el.innerHTML = rankingSets.map((set, i) =>
     `<button class="ranking-set-tab${i === activeRankingSetIdx ? ' active' : ''}"
       onclick="setActiveRankingSetIdx(${i})"
-      oncontextmenu="showRankingSetCtxMenu(event,${i});return false;">${set.name}</button>`
+      oncontextmenu="showRankingSetCtxMenu(event,${i});return false;">${escHtml(set.name)}</button>`
   ).join('') +
   `<button class="ranking-set-tab ranking-set-add" onclick="promptNewRankingSet()" title="New ranking set">+</button>`;
 }
@@ -3612,10 +3629,10 @@ function promptNewRankingSet() {
   const overlay = document.createElement('div');
   overlay.className = 'draft-setup-overlay';
   const scoringOpts = scoringPresets.map((p, i) =>
-    `<option value="${i}"${i === getActiveRankingSet().scoring_idx ? ' selected' : ''}>${p.name}</option>`
+    `<option value="${i}"${i === getActiveRankingSet().scoring_idx ? ' selected' : ''}>${escHtml(p.name)}</option>`
   ).join('');
   const copyOpts = '<option value="">— Start blank —</option>' +
-    rankingSets.map((s, i) => `<option value="${i}">${s.name}</option>`).join('');
+    rankingSets.map((s, i) => `<option value="${i}">${escHtml(s.name)}</option>`).join('');
   overlay.innerHTML = `
     <div class="draft-setup-modal" onclick="event.stopPropagation()" style="max-width:360px;">
       <h2>New Ranking Set</h2>
@@ -3697,12 +3714,12 @@ function openEditRankingSetModal(idx) {
   const overlay = document.createElement('div');
   overlay.className = 'draft-setup-overlay';
   const scoringOpts = scoringPresets.map((p, i) =>
-    `<option value="${i}"${i === (set.scoring_idx || 0) ? ' selected' : ''}>${p.name}</option>`
+    `<option value="${i}"${i === (set.scoring_idx || 0) ? ' selected' : ''}>${escHtml(p.name)}</option>`
   ).join('');
   overlay.innerHTML = `
     <div class="draft-setup-modal" onclick="event.stopPropagation()" style="max-width:320px;">
-      <h2>Edit "${set.name}"</h2>
-      <div class="draft-setup-field"><label>Name</label><input type="text" id="ers-name" value="${set.name}" style="width:100%;"></div>
+      <h2>Edit &#8220;${escHtml(set.name)}&#8221;</h2>
+      <div class="draft-setup-field"><label>Name</label><input type="text" id="ers-name" value="${escHtml(set.name)}" style="width:100%;"></div>
       <div class="draft-setup-field"><label>Scoring preset</label><select id="ers-scoring" style="width:100%;">${scoringOpts}</select></div>
       <div class="draft-setup-actions">
         <button class="draft-btn-secondary" onclick="this.closest('.draft-setup-overlay').remove()">Cancel</button>
@@ -3861,7 +3878,7 @@ function renderStatsView(content, players) {
     const clr = (TEAM_COLORS[p.team] || {}).border || '#888';
     const rdot = rookieTags.has(p.id) ? '<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#9333ea;margin-left:5px;vertical-align:middle;flex-shrink:0;"></span>' : '';
     const teamBadge = `<span style="background:${clr}22;color:${clr};border:1px solid ${clr}55;border-radius:3px;padding:3px 4px;font-size:10px;font-weight:700;letter-spacing:0.04em;white-space:nowrap;text-align:center;display:inline-block;min-width:34px;">${short}</span>`;
-    return `<tr><td>${p.name}${rdot}</td><td style="text-align:center;">${teamBadge}</td>${cells}</tr>`;
+    return `<tr><td>${escHtml(p.name)}${rdot}</td><td style="text-align:center;">${teamBadge}</td>${cells}</tr>`;
   }).join("");
 
   content.innerHTML = `
@@ -3983,7 +4000,7 @@ function renderRankingsView(content, players) {
       <span class="rank-num">${i + 1}</span>
       <div style="flex:0 0 12%;min-width:0;overflow:hidden;">
         <div class="rank-name" style="display:flex;align-items:center;gap:4px;">
-          <span>${p.name}${rookieDot}</span>
+          <span>${escHtml(p.name)}${rookieDot}</span>
         </div>
       </div>
       ${teamBadge}
@@ -4006,7 +4023,7 @@ function renderRankingsView(content, players) {
         const clr = (TEAM_COLORS[p.team] || {}).border || '#888';
         const short = TEAM_ABBR[p.team] || p.team.replace(/^.+ /, '');
         hiddenSection += `<div style="display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:4px;opacity:0.65;font-size:11px;">
-    <span style="color:var(--text-2);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:120px;">${p.name}</span>
+    <span style="color:var(--text-2);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:120px;">${escHtml(p.name)}</span>
     <span style="background:${clr}22;color:${clr};border:1px solid ${clr}55;border-radius:3px;padding:3px 4px;font-size:10px;font-weight:700;white-space:nowrap;flex-shrink:0;min-width:34px;text-align:center;display:inline-block;line-height:1;">${short}</span>
     <button class="add-player-btn" onclick="unhidePlayer('${p.id}')" style="font-size:10px;padding:2px 8px;flex-shrink:0;margin-top:0;line-height:1;">Re-rank</button>
   </div>`;
