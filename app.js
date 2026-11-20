@@ -399,10 +399,11 @@ async function flushAndClearLocalStorage() {
     clearTimeout(sbSaveTimer);
     sbSaveTimer = null;
     const payload = buildFullPayload();
-    await sb.from('app_state').upsert(
+    const { error } = await sb.from('app_state').upsert(
       { user_id: currentUser.id, app: SB_APP, data: payload, updated_at: new Date().toISOString() },
       { onConflict: 'user_id,app' }
     );
+    if (error) return error;
   }
   // Remove all ff_* keys (including dynamic ff_locks_* keys).
   const toRemove = [];
@@ -411,10 +412,15 @@ async function flushAndClearLocalStorage() {
     if (k && k.startsWith('ff_')) toRemove.push(k);
   }
   toRemove.forEach(k => localStorage.removeItem(k));
+  return null;
 }
 
 async function signOut() {
-  await flushAndClearLocalStorage();
+  const saveError = await flushAndClearLocalStorage();
+  if (saveError) {
+    alert("Couldn't save your latest changes — check your connection and try again.\n\n(" + saveError.message + ")");
+    return;
+  }
   await sb.auth.signOut();
   location.reload();
 }
