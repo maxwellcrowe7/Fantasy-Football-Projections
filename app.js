@@ -2015,7 +2015,7 @@ function renderPlayerRow(p, data, cols) {
 
   const delCell = p.misc
     ? `<td></td>`
-    : `<td><button class="del-btn" title="Remove" onclick="deletePlayer('${p.id}')">×</button></td>`;
+    : `<td><button class="del-btn" title="Remove" data-player-id="${escHtml(p.id)}" onclick="deletePlayer(this.dataset.playerId)">×</button></td>`;
 
   const dragAttrs = p.misc ? "" : `draggable="true"
     ondragstart="onRowDragStart(event,'${p.id}')"
@@ -3208,7 +3208,7 @@ function renderSettings() {
               <span style="font-size:12px;">${escHtml(k.name)}</span>
               <span style="background:${clr}22;color:${clr};border:1px solid ${clr}55;border-radius:3px;padding:1px 5px;font-size:9px;font-weight:700;white-space:nowrap;">${short}</span>
             </div>
-            <button style="flex-shrink:0;" class="add-player-btn" onclick="deleteKicker('${k.id}')" style="font-size:10px;padding:2px 8px;color:var(--red,#ef4444);border-color:var(--red,#ef4444);">Remove</button>
+            <button style="flex-shrink:0;" class="add-player-btn" data-kicker-id="${escHtml(k.id)}" onclick="deleteKicker(this.dataset.kickerId)" style="font-size:10px;padding:2px 8px;color:var(--red,#ef4444);border-color:var(--red,#ef4444);">Remove</button>
           </div>`;
         }).join('') + `</div>` : `<p style="font-size:11px;color:var(--text-3);margin-bottom:12px;font-family:var(--font-mono);">No kickers added yet.</p>`}
       <div style="display:flex;gap:8px;align-items:flex-end;margin-bottom:24px;flex-wrap:wrap;">
@@ -4050,7 +4050,7 @@ function renderRankingsView(content, players) {
         hiddenSection += `<div style="display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:4px;opacity:0.65;font-size:11px;">
     <span style="color:var(--text-2);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:120px;">${escHtml(p.name)}</span>
     <span style="background:${clr}22;color:${clr};border:1px solid ${clr}55;border-radius:3px;padding:3px 4px;font-size:10px;font-weight:700;white-space:nowrap;flex-shrink:0;min-width:34px;text-align:center;display:inline-block;line-height:1;">${short}</span>
-    <button class="add-player-btn" onclick="unhidePlayer('${p.id}')" style="font-size:10px;padding:2px 8px;flex-shrink:0;margin-top:0;line-height:1;">Re-rank</button>
+    <button class="add-player-btn" data-player-id="${escHtml(p.id)}" onclick="unhidePlayer(this.dataset.playerId)" style="font-size:10px;padding:2px 8px;flex-shrink:0;margin-top:0;line-height:1;">Re-rank</button>
   </div>`;
       });
       hiddenSection += `</div>`;
